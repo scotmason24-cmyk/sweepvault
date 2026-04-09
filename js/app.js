@@ -332,7 +332,7 @@ document.getElementById('remove-casino-btn').addEventListener('click', async () 
 function buildBookmarklet() {
   const appUrl = window.location.origin + window.location.pathname;
   // Minified bookmarklet code
-  const code = `javascript:(function(){var SITE_CONFIG=${JSON.stringify(SITE_CONFIG)};var url="${appUrl}";var h=window.location.hostname;var domain=Object.keys(SITE_CONFIG).find(function(d){return h.includes(d)});if(!domain){alert('SweepVault: This site is not supported.');return;}var cfg=SITE_CONFIG[domain];var el=null;var selectors=document.querySelectorAll(cfg.selector);if(selectors.length>1){el=Array.from(selectors).find(function(e){var t=String(e.textContent||'');return t.toUpperCase().includes('SC')&&/\\d/.test(t);})||Array.from(selectors).find(function(e){return/\\d/.test(String(e.textContent||''));});}else if(selectors.length===1){el=selectors[0];}if(!el&&cfg.selector.includes('aria-label')){var ae=document.querySelector(cfg.selector);if(ae){var av=ae.getAttribute('aria-label');if(av&&/\\d/.test(av))el={textContent:av};}}if(!el){alert('SweepVault: Could not find balance on '+cfg.name+'. Make sure you are logged in.');return;}var raw=String(el.textContent||'').trim().replace(/[kM]/g,'');var clean=raw.replace(/,/g,'');var matches=clean.match(/\\d+(\\.\\d+)?/g);var bal='0';if(matches){var dec=matches.find(function(m){return m.includes('.');});bal=dec||matches[0];}if(h.includes('fortunecoins.com')){bal=(parseFloat(bal)/100).toFixed(2);}var token=null;var accessToken=null;for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.includes('supabase')&&k.includes('auth')){try{var parsed=JSON.parse(localStorage.getItem(k));if(parsed&&parsed.access_token){accessToken=parsed.access_token;token=k;break;}}catch(e){}}}if(!accessToken){alert('SweepVault: Please sign in to SweepVault first at '+url);return;}fetch('https://wqkihxadcxmxgicixlww.supabase.co/rest/v1/rpc/sync_balance',{method:'POST',headers:{'Content-Type':'application/json','apikey':'sb_publishable_vgt7oNKoGwJyDsCvVmYMXw_Y3APibq4','Authorization':'Bearer '+accessToken},body:JSON.stringify({p_domain:domain,p_balance:parseFloat(bal)})}).then(function(r){if(r.ok){var d=document.createElement('div');d.style.cssText='position:fixed;top:20px;right:20px;background:#1a1a2e;border:2px solid #FFD700;color:#FFD700;padding:12px 20px;border-radius:10px;font-family:monospace;font-size:14px;z-index:999999;';d.textContent='✓ SweepVault: '+cfg.name+' synced ('+bal+' SC)';document.body.appendChild(d);setTimeout(function(){d.remove();},3000);}else{alert('SweepVault: Sync failed. Please try again.');}}).catch(function(){alert('SweepVault: Network error.');});})();`;
+  const code = `javascript:(function(){var SITE_CONFIG=${JSON.stringify(SITE_CONFIG)};var appUrl="${appUrl}";var h=window.location.hostname;var domain=Object.keys(SITE_CONFIG).find(function(d){return h.includes(d)});if(!domain){alert('SweepVault: This site is not supported.');return;}var cfg=SITE_CONFIG[domain];var el=null;var selectors=document.querySelectorAll(cfg.selector);if(selectors.length>1){el=Array.from(selectors).find(function(e){var t=String(e.textContent||'');return t.toUpperCase().includes('SC')&&/\\d/.test(t);})||Array.from(selectors).find(function(e){return/\\d/.test(String(e.textContent||''));});}else if(selectors.length===1){el=selectors[0];}if(!el&&cfg.selector.includes('aria-label')){var ae=document.querySelector(cfg.selector);if(ae){var av=ae.getAttribute('aria-label');if(av&&/\\d/.test(av))el={textContent:av};}}if(!el){alert('SweepVault: Could not find balance on '+cfg.name+'. Make sure you are logged in.');return;}var raw=String(el.textContent||'').trim().replace(/[kM]/g,'');var clean=raw.replace(/,/g,'');var matches=clean.match(/\\d+(\\.\\d+)?/g);var bal='0';if(matches){var dec=matches.find(function(m){return m.includes('.');});bal=dec||matches[0];}if(h.includes('fortunecoins.com')){bal=(parseFloat(bal)/100).toFixed(2);}function doSync(accessToken){fetch('https://wqkihxadcxmxgicixlww.supabase.co/rest/v1/rpc/sync_balance',{method:'POST',headers:{'Content-Type':'application/json','apikey':'sb_publishable_vgt7oNKoGwJyDsCvVmYMXw_Y3APibq4','Authorization':'Bearer '+accessToken},body:JSON.stringify({p_domain:domain,p_balance:parseFloat(bal)})}).then(function(r){if(r.ok){var d=document.createElement('div');d.style.cssText='position:fixed;top:20px;right:20px;background:#1a1a2e;border:2px solid #FFD700;color:#FFD700;padding:12px 20px;border-radius:10px;font-family:monospace;font-size:14px;z-index:999999;';d.textContent='\\u2713 SweepVault: '+cfg.name+' synced ('+bal+' SC)';document.body.appendChild(d);setTimeout(function(){d.remove();},3000);}else{alert('SweepVault: Sync failed ('+r.status+'). Please try again.');}}).catch(function(){alert('SweepVault: Network error.');});}var svWin=window.open(appUrl,'sweepvault_token','width=1,height=1,top=-100,left=-100');var timeout=setTimeout(function(){if(svWin)svWin.close();alert('SweepVault: Could not get token. Make sure you are signed in at '+appUrl);},8000);window.addEventListener('message',function handler(ev){if(ev.data&&ev.data.type==='SWEEPVAULT_TOKEN_RESPONSE'){clearTimeout(timeout);if(svWin)svWin.close();window.removeEventListener('message',handler);doSync(ev.data.access_token);}});})();`;
   return code;
 }
 
@@ -367,9 +367,15 @@ document.getElementById('copy-bookmarklet-btn').addEventListener('click', async 
 });
 
 // ── Supabase realtime sync updates ───────────────────────────────────────────
+let realtimeChannel = null;
+
 function subscribeToUpdates() {
   if (!currentUser) return;
-  sb.channel('casinos')
+  if (realtimeChannel) {
+    sb.removeChannel(realtimeChannel);
+    realtimeChannel = null;
+  }
+  realtimeChannel = sb.channel('casinos_' + currentUser.id)
     .on('postgres_changes', {
       event: 'UPDATE',
       schema: 'public',
@@ -385,10 +391,29 @@ function subscribeToUpdates() {
     .subscribe();
 }
 
+// ── Cross-domain token bridge ─────────────────────────────────────────────────
+// Casino sites can't access SweepVault's localStorage directly.
+// We listen for a postMessage request from the bookmarklet and respond with the token.
+window.addEventListener('message', async (e) => {
+  if (e.data && e.data.type === 'SWEEPVAULT_TOKEN_REQUEST') {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      e.source.postMessage({
+        type: 'SWEEPVAULT_TOKEN_RESPONSE',
+        access_token: session.access_token
+      }, e.origin);
+    }
+  }
+});
+
 // ── Start ─────────────────────────────────────────────────────────────────────
 init().then(() => {
   if (currentUser) subscribeToUpdates();
-  sb.auth.onAuthStateChange((_e, session) => {
-    if (session) subscribeToUpdates();
-  });
+});
+
+sb.auth.onAuthStateChange((_e, session) => {
+  if (session && (!currentUser || currentUser.id !== session.user.id)) {
+    currentUser = session.user;
+    subscribeToUpdates();
+  }
 });
