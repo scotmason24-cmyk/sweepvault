@@ -325,6 +325,22 @@ select option { background: var(--bg2); }
   color: var(--text2);
 }
 
+/* BONUS READY — Option B glow */
+.casino-card.bonus-ready {
+  border-color: rgba(52, 211, 153, 0.4);
+  box-shadow: 0 0 16px rgba(52, 211, 153, 0.18), 0 0 4px rgba(52, 211, 153, 0.25);
+}
+
+.casino-card.bonus-ready .casino-timer {
+  color: var(--green);
+}
+
+.casino-timer {
+  font-size: 10px;
+  color: var(--text2);
+  margin-top: 2px;
+}
+
 .casino-card.synced::after {
   content: '✓';
   position: absolute;
@@ -662,6 +678,83 @@ select option { background: var(--bg2); }
   color: var(--text2);
   font-size: 20px;
   line-height: 1;
+}
+
+/* DETAIL BONUS CARD */
+.detail-bonus-card {
+  margin: 12px 16px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-bonus-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.detail-bonus-label {
+  font-size: 11px;
+  color: var(--text2);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.detail-reset-select {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text2);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  padding: 4px 8px;
+  outline: none;
+  cursor: pointer;
+  width: auto;
+}
+
+.detail-reset-select:focus { border-color: var(--gold); }
+
+.detail-bonus-status {
+  font-family: 'DM Mono', monospace;
+  font-size: 28px;
+  font-weight: 300;
+  color: var(--text2);
+  letter-spacing: -0.01em;
+}
+
+.detail-bonus-status.ready {
+  color: var(--green);
+}
+
+.btn-claim {
+  width: 100%;
+  padding: 11px;
+  background: rgba(52, 211, 153, 0.1);
+  border: 1.5px solid rgba(52, 211, 153, 0.4);
+  border-radius: var(--radius-sm);
+  color: var(--green);
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.3px;
+}
+
+.btn-claim:hover {
+  background: rgba(52, 211, 153, 0.18);
+  border-color: var(--green);
+}
+
+.btn-claim:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .detail-danger-zone {

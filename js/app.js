@@ -100,6 +100,7 @@ function showApp() {
   document.getElementById('auth-screen').classList.remove('active');
   document.getElementById('app-screen').classList.add('active');
   loadCasinos();
+  startTimerLoop();
 }
 
 let isLogin = true;
@@ -205,11 +206,21 @@ function renderCasinos() {
 
   empty.style.display = 'none';
 
+  // Sort: ready bonuses first, then by name
+  const sorted = [...userCasinos].sort((a, b) => {
+    const aReady = getTimerInfo(a).ready;
+    const bReady = getTimerInfo(b).ready;
+    if (aReady && !bReady) return -1;
+    if (!aReady && bReady) return 1;
+    return a.name.localeCompare(b.name);
+  });
+
   let total = 0;
-  userCasinos.forEach(casino => {
+  sorted.forEach(casino => {
     total += parseFloat(casino.balance) || 0;
+    const { ready, text } = getTimerInfo(casino);
     const card = document.createElement('div');
-    card.className = 'casino-card';
+    card.className = 'casino-card' + (ready ? ' bonus-ready' : '');
     card.dataset.id = casino.id;
 
     const updated = casino.updated_at
@@ -220,6 +231,7 @@ function renderCasinos() {
       <div class="casino-name">${casino.name}</div>
       <div class="casino-balance">${formatBalance(casino.balance)}</div>
       <div class="casino-updated">${updated}</div>
+      <div class="casino-timer" style="color:${ready ? 'var(--green)' : ''}">${text}</div>
     `;
 
     card.addEventListener('click', () => openDetailPage(casino));
@@ -228,6 +240,49 @@ function renderCasinos() {
 
   totalEl.textContent = formatBalance(total);
   countEl.textContent = `${userCasinos.length} casino${userCasinos.length !== 1 ? 's' : ''} tracked`;
+}
+
+// ── Timer helpers ─────────────────────────────────────────────────────────────
+function getTimerInfo(casino) {
+  const resetHours = parseInt(casino.reset_hours) || 24;
+  if (!casino.last_claimed_at) return { ready: true, text: '✓ Ready' };
+  const claimedAt = new Date(casino.last_claimed_at).getTime();
+  const resetAt   = claimedAt + resetHours * 3600 * 1000;
+  const remaining = resetAt - Date.now();
+  if (remaining <= 0) return { ready: true, text: '✓ Ready' };
+  const h = Math.floor(remaining / 3600000);
+  const m = Math.floor((remaining % 3600000) / 60000);
+  return { ready: false, text: h > 0 ? `${h}h ${m}m` : `${m}m` };
+}
+
+let timerInterval = null;
+
+function startTimerLoop() {
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    // Refresh card timers without full re-render
+    document.querySelectorAll('.casino-card[data-id]').forEach(card => {
+      const casino = userCasinos.find(c => String(c.id) === card.dataset.id);
+      if (!casino) return;
+      const { ready, text } = getTimerInfo(casino);
+      const timerEl = card.querySelector('.casino-timer');
+      if (timerEl) { timerEl.textContent = text; timerEl.style.color = ready ? 'var(--green)' : ''; }
+      card.classList.toggle('bonus-ready', ready);
+    });
+    // If detail page is open, refresh its bonus status too
+    if (activeCasino) updateDetailBonusStatus(activeCasino);
+  }, 30000); // every 30 seconds
+}
+
+function updateDetailBonusStatus(casino) {
+  const { ready, text } = getTimerInfo(casino);
+  const statusEl = document.getElementById('detail-bonus-status');
+  if (statusEl) {
+    statusEl.textContent = ready ? '✓ Ready' : text;
+    statusEl.className = 'detail-bonus-status' + (ready ? ' ready' : '');
+  }
+  const claimBtn = document.getElementById('detail-claim-btn');
+  if (claimBtn) claimBtn.disabled = !ready;
 }
 
 function formatBalance(val) {
@@ -262,6 +317,11 @@ function openDetailPage(casino) {
   document.getElementById('detail-balance-updated').textContent =
     casino.updated_at ? 'Updated ' + timeAgo(new Date(casino.updated_at)) : 'never updated';
 
+  // Bonus section
+  const resetSelect = document.getElementById('detail-reset-hours');
+  resetSelect.value = String(casino.reset_hours || 24);
+  updateDetailBonusStatus(casino);
+
   // Hide app screen, show detail screen
   document.getElementById('app-screen').classList.remove('active');
   document.getElementById('detail-screen').classList.add('active');
@@ -274,6 +334,35 @@ function closeDetailPage() {
 }
 
 document.getElementById('detail-back-btn').addEventListener('click', closeDetailPage);
+
+document.getElementById('detail-claim-btn').addEventListener('click', async () => {
+  if (!activeCasino) return;
+  const resetHours = parseInt(document.getElementById('detail-reset-hours').value) || 24;
+  const now = new Date().toISOString();
+  await sb.from('casinos').update({
+    last_claimed_at: now,
+    reset_hours: resetHours
+  }).eq('id', activeCasino.id).eq('user_id', currentUser.id);
+  // Update local state
+  const casino = userCasinos.find(c => c.id === activeCasino.id);
+  if (casino) { casino.last_claimed_at = now; casino.reset_hours = resetHours; }
+  activeCasino.last_claimed_at = now;
+  activeCasino.reset_hours = resetHours;
+  updateDetailBonusStatus(activeCasino);
+  renderCasinos();
+});
+
+document.getElementById('detail-reset-hours').addEventListener('change', async () => {
+  if (!activeCasino) return;
+  const resetHours = parseInt(document.getElementById('detail-reset-hours').value) || 24;
+  await sb.from('casinos').update({ reset_hours: resetHours })
+    .eq('id', activeCasino.id).eq('user_id', currentUser.id);
+  const casino = userCasinos.find(c => c.id === activeCasino.id);
+  if (casino) casino.reset_hours = resetHours;
+  activeCasino.reset_hours = resetHours;
+  updateDetailBonusStatus(activeCasino);
+  renderCasinos();
+});
 
 document.getElementById('detail-edit-balance-btn').addEventListener('click', () => {
   if (activeCasino) openEditModal(activeCasino);
