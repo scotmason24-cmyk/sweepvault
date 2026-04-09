@@ -246,10 +246,10 @@ select option { background: var(--bg2); }
 
 .total-amount {
   font-family: 'DM Mono', monospace;
-  font-size: 36px;
-  font-weight: 500;
+  font-size: 48px;
+  font-weight: 300;
   color: var(--gold);
-  letter-spacing: 0;
+  letter-spacing: -0.02em;
   line-height: 1;
 }
 
