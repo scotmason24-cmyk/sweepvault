@@ -122,57 +122,129 @@
       </a>
     </div>
 
-    <div class="detail-balance-card">
-      <div class="detail-balance-label">SC Balance</div>
-      <div class="detail-balance-amount" id="detail-balance-amount">0.00</div>
-      <div class="detail-balance-footer">
-        <span id="detail-balance-updated">never updated</span>
-        <button class="btn-edit-inline" id="detail-edit-balance-btn">Edit</button>
+    <!-- TABS -->
+    <div class="detail-tabs">
+      <button class="detail-tab active" data-tab="overview">Overview</button>
+      <button class="detail-tab" data-tab="records">My Records</button>
+    </div>
+
+    <!-- OVERVIEW TAB -->
+    <div id="tab-overview">
+      <div class="detail-balance-card">
+        <div class="detail-balance-label">SC Balance</div>
+        <div class="detail-balance-amount" id="detail-balance-amount">0.00</div>
+        <div class="detail-balance-footer">
+          <span id="detail-balance-updated">never updated</span>
+          <button class="btn-edit-inline" id="detail-edit-balance-btn">Edit</button>
+        </div>
+      </div>
+
+      <!-- BONUS TIMER CARD -->
+      <div class="detail-bonus-card">
+        <div class="detail-bonus-top">
+          <div class="detail-bonus-label">Daily Bonus</div>
+          <select class="detail-reset-select" id="detail-reset-hours">
+            <option value="6">6 hr reset</option>
+            <option value="24" selected>24 hr reset</option>
+            <option value="daily">Daily reset time</option>
+          </select>
+        </div>
+        <div class="daily-reset-time-wrap" id="daily-reset-time-wrap" style="display:none">
+          <input type="time" id="daily-reset-time" class="daily-time-input" />
+          <div class="daily-time-hint">Bonus resets at this time each day (local time)</div>
+        </div>
+        <div class="detail-bonus-status ready" id="detail-bonus-status">✓ Ready</div>
+        <div class="detail-reset-time-display" id="detail-reset-time-display" style="display:none"></div>
+        <button class="btn-claim" id="detail-claim-btn">Mark as Claimed</button>
+      </div>
+
+      <div class="detail-sections">
+        <div class="detail-section-row" id="detail-charts-row">
+          <span class="detail-section-icon">📊</span>
+          <span class="detail-section-label">Balance History</span>
+          <span class="detail-section-badge coming">Soon</span>
+          <span class="detail-section-arrow">›</span>
+        </div>
+        <div class="detail-section-row" id="detail-bonuses-row">
+          <span class="detail-section-icon">🎁</span>
+          <span class="detail-section-label">Active Bonuses</span>
+          <span class="detail-section-badge" id="detail-bonus-count">0</span>
+          <span class="detail-section-arrow">›</span>
+        </div>
+      </div>
+
+      <div class="detail-danger-zone">
+        <button class="btn-danger" id="detail-remove-btn">Remove Casino</button>
       </div>
     </div>
 
-    <!-- BONUS TIMER CARD -->
-    <div class="detail-bonus-card">
-      <div class="detail-bonus-top">
-        <div class="detail-bonus-label">Daily Bonus</div>
-        <select class="detail-reset-select" id="detail-reset-hours">
-          <option value="6">6 hr reset</option>
-          <option value="24" selected>24 hr reset</option>
-          <option value="daily">Daily reset time</option>
-        </select>
-      </div>
-      <div class="daily-reset-time-wrap" id="daily-reset-time-wrap" style="display:none">
-        <input type="time" id="daily-reset-time" class="daily-time-input" />
-        <div class="daily-time-hint">Bonus resets at this time each day (local time)</div>
-      </div>
-      <div class="detail-bonus-status ready" id="detail-bonus-status">✓ Ready</div>
-      <div class="detail-reset-time-display" id="detail-reset-time-display" style="display:none"></div>
-      <button class="btn-claim" id="detail-claim-btn">Mark as Claimed</button>
-    </div>
+    <!-- MY RECORDS TAB -->
+    <div id="tab-records" style="display:none">
 
-    <div class="detail-sections">
-      <div class="detail-section-row" id="detail-charts-row">
-        <span class="detail-section-icon">📊</span>
-        <span class="detail-section-label">Balance History</span>
-        <span class="detail-section-badge coming">Soon</span>
-        <span class="detail-section-arrow">›</span>
+      <!-- Notes -->
+      <div class="records-section">
+        <div class="records-section-header">
+          <span class="records-section-title">Notes</span>
+        </div>
+        <textarea id="casino-notes" class="casino-notes-input" placeholder="Anything you want to remember about this casino..."></textarea>
       </div>
-      <div class="detail-section-row" id="detail-bonuses-row">
-        <span class="detail-section-icon">🎁</span>
-        <span class="detail-section-label">Active Bonuses</span>
-        <span class="detail-section-badge" id="detail-bonus-count">0</span>
-        <span class="detail-section-arrow">›</span>
+
+      <!-- Redemptions -->
+      <div class="records-section">
+        <div class="records-section-header">
+          <span class="records-section-title">Redemptions</span>
+          <button class="btn-add-entry" id="add-redemption-btn">+ Add</button>
+        </div>
+        <div id="redemptions-list" class="entries-list"></div>
       </div>
-      <div class="detail-section-row" id="detail-redemptions-row">
-        <span class="detail-section-icon">💰</span>
-        <span class="detail-section-label">Redemptions</span>
-        <span class="detail-section-badge" id="detail-redemption-count">0</span>
-        <span class="detail-section-arrow">›</span>
+
+      <!-- Purchases -->
+      <div class="records-section">
+        <div class="records-section-header">
+          <span class="records-section-title">Purchases</span>
+          <button class="btn-add-entry" id="add-purchase-btn">+ Add</button>
+        </div>
+        <div id="purchases-list" class="entries-list"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ADD REDEMPTION MODAL -->
+  <div class="modal-overlay" id="add-redemption-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Add Redemption</h2>
+        <button class="modal-close" id="close-redemption-modal">✕</button>
+      </div>
+      <div class="modal-body">
+        <label>Date</label>
+        <input type="date" id="redemption-date" />
+        <label>Amount ($)</label>
+        <input type="number" id="redemption-amount" placeholder="0.00" step="0.01" min="0" />
+        <label>Notes (optional)</label>
+        <input type="text" id="redemption-notes" placeholder="Payment method, processing time..." />
+        <button class="btn-primary" id="confirm-add-redemption">Save Redemption</button>
       </div>
     </div>
+  </div>
 
-    <div class="detail-danger-zone">
-      <button class="btn-danger" id="detail-remove-btn">Remove Casino</button>
+  <!-- ADD PURCHASE MODAL -->
+  <div class="modal-overlay" id="add-purchase-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Add Purchase</h2>
+        <button class="modal-close" id="close-purchase-modal">✕</button>
+      </div>
+      <div class="modal-body">
+        <label>Date</label>
+        <input type="date" id="purchase-date" />
+        <label>SC Acquired</label>
+        <input type="number" id="purchase-sc" placeholder="0.00" step="0.01" min="0" />
+        <label>Money Spent ($)</label>
+        <input type="number" id="purchase-money" placeholder="0.00" step="0.01" min="0" />
+        <button class="btn-primary" id="confirm-add-purchase">Save Purchase</button>
+      </div>
     </div>
   </div>
 

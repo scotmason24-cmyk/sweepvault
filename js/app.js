@@ -386,6 +386,15 @@ function openDetailPage(casino) {
   }
   updateDetailBonusStatus(casino);
 
+  // Reset to Overview tab
+  document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector('.detail-tab[data-tab="overview"]').classList.add('active');
+  document.getElementById('tab-overview').style.display = 'block';
+  document.getElementById('tab-records').style.display  = 'none';
+
+  // Notes field
+  document.getElementById('casino-notes').value = casino.notes || '';
+
   // Hide app screen, show detail screen
   document.getElementById('app-screen').classList.remove('active');
   document.getElementById('detail-screen').classList.add('active');
@@ -633,6 +642,179 @@ function subscribeToUpdates() {
     })
     .subscribe();
 }
+
+// ── My Records Tab ───────────────────────────────────────────────────────────
+let casinoLogEntries = [];
+let notesDebounceTimer = null;
+
+async function loadCasinoLog(casinoId) {
+  const { data, error } = await sb
+    .from('casino_log')
+    .select('*')
+    .eq('casino_id', casinoId)
+    .eq('user_id', currentUser.id)
+    .order('entry_date', { ascending: false });
+  if (error) { console.error(error); return; }
+  casinoLogEntries = data || [];
+  renderLogEntries();
+}
+
+function renderLogEntries() {
+  renderRedemptions(casinoLogEntries.filter(e => e.entry_type === 'redemption'));
+  renderPurchases(casinoLogEntries.filter(e => e.entry_type === 'purchase'));
+}
+
+function formatEntryDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function renderRedemptions(entries) {
+  const list = document.getElementById('redemptions-list');
+  if (!list) return;
+  if (entries.length === 0) {
+    list.innerHTML = '<div class="entries-empty">No redemptions logged yet</div>';
+    return;
+  }
+  const total = entries.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+  list.innerHTML = `
+    <div class="entries-total">Total paid out: $${total.toFixed(2)}</div>
+    ${entries.map(e => `
+      <div class="entry-item">
+        <div class="entry-main">
+          <span class="entry-amount">$${parseFloat(e.amount || 0).toFixed(2)}</span>
+          <span class="entry-date">${formatEntryDate(e.entry_date)}</span>
+        </div>
+        ${e.notes ? `<div class="entry-notes">${e.notes}</div>` : ''}
+        <button class="entry-delete" data-id="${e.id}">✕</button>
+      </div>
+    `).join('')}
+  `;
+  list.querySelectorAll('.entry-delete').forEach(btn => {
+    btn.addEventListener('click', () => deleteLogEntry(btn.dataset.id));
+  });
+}
+
+function renderPurchases(entries) {
+  const list = document.getElementById('purchases-list');
+  if (!list) return;
+  if (entries.length === 0) {
+    list.innerHTML = '<div class="entries-empty">No purchases logged yet</div>';
+    return;
+  }
+  const totalSC    = entries.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+  const totalSpent = entries.reduce((sum, e) => sum + (parseFloat(e.money_spent) || 0), 0);
+  list.innerHTML = `
+    <div class="entries-total">${totalSC.toFixed(2)} SC acquired · $${totalSpent.toFixed(2)} spent</div>
+    ${entries.map(e => `
+      <div class="entry-item">
+        <div class="entry-main">
+          <span class="entry-amount">${parseFloat(e.amount || 0).toFixed(2)} SC</span>
+          <span class="entry-cost">$${parseFloat(e.money_spent || 0).toFixed(2)}</span>
+          <span class="entry-date">${formatEntryDate(e.entry_date)}</span>
+        </div>
+        <button class="entry-delete" data-id="${e.id}">✕</button>
+      </div>
+    `).join('')}
+  `;
+  list.querySelectorAll('.entry-delete').forEach(btn => {
+    btn.addEventListener('click', () => deleteLogEntry(btn.dataset.id));
+  });
+}
+
+async function deleteLogEntry(id) {
+  if (!confirm('Delete this entry?')) return;
+  const { error } = await sb.from('casino_log').delete().eq('id', id).eq('user_id', currentUser.id);
+  if (error) { console.error(error); return; }
+  casinoLogEntries = casinoLogEntries.filter(e => e.id !== id);
+  renderLogEntries();
+}
+
+// Tab switching
+document.querySelectorAll('.detail-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    const tabName = tab.dataset.tab;
+    document.getElementById('tab-overview').style.display = tabName === 'overview' ? 'block' : 'none';
+    document.getElementById('tab-records').style.display  = tabName === 'records'  ? 'block' : 'none';
+    if (tabName === 'records' && activeCasino) loadCasinoLog(activeCasino.id);
+  });
+});
+
+// Notes — auto-save 800ms after user stops typing
+document.getElementById('casino-notes').addEventListener('input', () => {
+  clearTimeout(notesDebounceTimer);
+  notesDebounceTimer = setTimeout(async () => {
+    if (!activeCasino) return;
+    const notes = document.getElementById('casino-notes').value;
+    await sb.from('casinos').update({ notes }).eq('id', activeCasino.id).eq('user_id', currentUser.id);
+    const casino = userCasinos.find(c => c.id === activeCasino.id);
+    if (casino) casino.notes = notes;
+    activeCasino.notes = notes;
+  }, 800);
+});
+
+// Add Redemption
+document.getElementById('add-redemption-btn').addEventListener('click', () => {
+  document.getElementById('redemption-date').value   = new Date().toISOString().split('T')[0];
+  document.getElementById('redemption-amount').value = '';
+  document.getElementById('redemption-notes').value  = '';
+  document.getElementById('add-redemption-modal').classList.add('open');
+});
+document.getElementById('close-redemption-modal').addEventListener('click', () => {
+  document.getElementById('add-redemption-modal').classList.remove('open');
+});
+document.getElementById('add-redemption-modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) document.getElementById('add-redemption-modal').classList.remove('open');
+});
+document.getElementById('confirm-add-redemption').addEventListener('click', async () => {
+  if (!activeCasino) return;
+  const date   = document.getElementById('redemption-date').value;
+  const amount = document.getElementById('redemption-amount').value;
+  const notes  = document.getElementById('redemption-notes').value.trim();
+  if (!date || !amount) return;
+  const { data, error } = await sb.from('casino_log').insert({
+    user_id: currentUser.id, casino_id: activeCasino.id,
+    entry_type: 'redemption', amount: parseFloat(amount),
+    notes: notes || null, entry_date: date
+  }).select().single();
+  if (error) { console.error(error); return; }
+  casinoLogEntries.unshift(data);
+  renderLogEntries();
+  document.getElementById('add-redemption-modal').classList.remove('open');
+});
+
+// Add Purchase
+document.getElementById('add-purchase-btn').addEventListener('click', () => {
+  document.getElementById('purchase-date').value  = new Date().toISOString().split('T')[0];
+  document.getElementById('purchase-sc').value    = '';
+  document.getElementById('purchase-money').value = '';
+  document.getElementById('add-purchase-modal').classList.add('open');
+});
+document.getElementById('close-purchase-modal').addEventListener('click', () => {
+  document.getElementById('add-purchase-modal').classList.remove('open');
+});
+document.getElementById('add-purchase-modal').addEventListener('click', (e) => {
+  if (e.target === e.currentTarget) document.getElementById('add-purchase-modal').classList.remove('open');
+});
+document.getElementById('confirm-add-purchase').addEventListener('click', async () => {
+  if (!activeCasino) return;
+  const date  = document.getElementById('purchase-date').value;
+  const sc    = document.getElementById('purchase-sc').value;
+  const money = document.getElementById('purchase-money').value;
+  if (!date || !sc || !money) return;
+  const { data, error } = await sb.from('casino_log').insert({
+    user_id: currentUser.id, casino_id: activeCasino.id,
+    entry_type: 'purchase', amount: parseFloat(sc),
+    money_spent: parseFloat(money), entry_date: date
+  }).select().single();
+  if (error) { console.error(error); return; }
+  casinoLogEntries.unshift(data);
+  renderLogEntries();
+  document.getElementById('add-purchase-modal').classList.remove('open');
+});
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 checkTokenBridge().then((isBridge) => {
