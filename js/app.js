@@ -67,6 +67,7 @@ const SITE_CONFIG = {
 let currentUser = null;
 let userCasinos = [];
 let editingCasinoId = null;
+let activeCasino = null;       // casino object currently shown in detail view
 
 // ── Init ─────────────────────────────────────────────────────────────────────
 async function init() {
@@ -221,7 +222,7 @@ function renderCasinos() {
       <div class="casino-updated">${updated}</div>
     `;
 
-    card.addEventListener('click', () => openEditModal(casino));
+    card.addEventListener('click', () => openDetailPage(casino));
     grid.appendChild(card);
   });
 
@@ -241,6 +242,51 @@ function timeAgo(date) {
   if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
   return `${Math.floor(diff/86400)}d ago`;
 }
+
+// ── Detail Page ───────────────────────────────────────────────────────────────
+function openDetailPage(casino) {
+  activeCasino = casino;
+  const siteUrl = `https://${casino.domain}`;
+
+  // Header
+  document.getElementById('detail-casino-name').textContent = casino.name;
+  document.getElementById('detail-open-site').href = siteUrl;
+
+  // Hero
+  document.getElementById('detail-hero-name').textContent = casino.name;
+  document.getElementById('detail-hero-domain').textContent = casino.domain;
+  document.getElementById('detail-open-site-btn').href = siteUrl;
+
+  // Balance card
+  document.getElementById('detail-balance-amount').textContent = formatBalance(casino.balance);
+  document.getElementById('detail-balance-updated').textContent =
+    casino.updated_at ? 'Updated ' + timeAgo(new Date(casino.updated_at)) : 'never updated';
+
+  // Hide app screen, show detail screen
+  document.getElementById('app-screen').classList.remove('active');
+  document.getElementById('detail-screen').classList.add('active');
+}
+
+function closeDetailPage() {
+  document.getElementById('detail-screen').classList.remove('active');
+  document.getElementById('app-screen').classList.add('active');
+  activeCasino = null;
+}
+
+document.getElementById('detail-back-btn').addEventListener('click', closeDetailPage);
+
+document.getElementById('detail-edit-balance-btn').addEventListener('click', () => {
+  if (activeCasino) openEditModal(activeCasino);
+});
+
+document.getElementById('detail-remove-btn').addEventListener('click', async () => {
+  if (!activeCasino) return;
+  if (!confirm(`Remove ${activeCasino.name}?`)) return;
+  await removeCasino(activeCasino.id);
+  userCasinos = userCasinos.filter(c => c.id !== activeCasino.id);
+  renderCasinos();
+  closeDetailPage();
+});
 
 // ── Add Casino Modal ──────────────────────────────────────────────────────────
 function populateCasinoSelect() {
@@ -317,6 +363,10 @@ document.getElementById('confirm-edit-balance').addEventListener('click', async 
   }
   renderCasinos();
   closeEditModal();
+  // If detail page is open for this casino, refresh it
+  if (activeCasino && activeCasino.id === editingCasinoId) {
+    openDetailPage(casino);
+  }
 });
 
 document.getElementById('remove-casino-btn').addEventListener('click', async () => {
@@ -377,6 +427,21 @@ async function checkTokenBridge() {
   }, '*');
   setTimeout(() => window.close(), 200);
   return true;
+}
+
+// ── Realtime ──────────────────────────────────────────────────────────────────
+function subscribeToUpdates() {
+  if (!currentUser) return;
+  sb.channel('casinos-changes')
+    .on('postgres_changes', {
+      event: '*',
+      schema: 'public',
+      table: 'casinos',
+      filter: `user_id=eq.${currentUser.id}`
+    }, () => {
+      loadCasinos();
+    })
+    .subscribe();
 }
 
 // ── Start ─────────────────────────────────────────────────────────────────────

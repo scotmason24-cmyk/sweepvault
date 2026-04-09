@@ -106,6 +106,57 @@
     </div>
   </div>
 
+  <!-- CASINO DETAIL SCREEN -->
+  <div id="detail-screen" class="screen">
+    <header class="detail-header">
+      <button class="icon-btn" id="detail-back-btn" title="Back">←</button>
+      <span class="detail-title" id="detail-casino-name">Casino</span>
+      <a class="icon-btn" id="detail-open-site" href="#" target="_blank" rel="noopener noreferrer" title="Open Casino Site">↗</a>
+    </header>
+
+    <div class="detail-hero">
+      <div class="detail-hero-name" id="detail-hero-name">Casino</div>
+      <div class="detail-hero-domain" id="detail-hero-domain">casino.com</div>
+      <a class="btn-open-site" id="detail-open-site-btn" href="#" target="_blank" rel="noopener noreferrer">
+        Open Casino Site ↗
+      </a>
+    </div>
+
+    <div class="detail-balance-card">
+      <div class="detail-balance-label">SC Balance</div>
+      <div class="detail-balance-amount" id="detail-balance-amount">0.00</div>
+      <div class="detail-balance-footer">
+        <span id="detail-balance-updated">never updated</span>
+        <button class="btn-edit-inline" id="detail-edit-balance-btn">Edit</button>
+      </div>
+    </div>
+
+    <div class="detail-sections">
+      <div class="detail-section-row" id="detail-charts-row">
+        <span class="detail-section-icon">📊</span>
+        <span class="detail-section-label">Balance History</span>
+        <span class="detail-section-badge coming">Soon</span>
+        <span class="detail-section-arrow">›</span>
+      </div>
+      <div class="detail-section-row" id="detail-bonuses-row">
+        <span class="detail-section-icon">🎁</span>
+        <span class="detail-section-label">Active Bonuses</span>
+        <span class="detail-section-badge" id="detail-bonus-count">0</span>
+        <span class="detail-section-arrow">›</span>
+      </div>
+      <div class="detail-section-row" id="detail-redemptions-row">
+        <span class="detail-section-icon">💰</span>
+        <span class="detail-section-label">Redemptions</span>
+        <span class="detail-section-badge" id="detail-redemption-count">0</span>
+        <span class="detail-section-arrow">›</span>
+      </div>
+    </div>
+
+    <div class="detail-danger-zone">
+      <button class="btn-danger" id="detail-remove-btn">Remove Casino</button>
+    </div>
+  </div>
+
   <!-- BOOKMARKLET MODAL -->
   <div class="modal-overlay" id="bookmarklet-modal">
     <div class="modal">
