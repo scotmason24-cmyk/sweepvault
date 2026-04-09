@@ -53,12 +53,39 @@
       </div>
     </header>
 
-    <!-- TOTAL BALANCE BAR -->
-    <div class="total-bar">
-      <div class="total-label">Total SC Balance</div>
-      <div class="total-amount" id="total-balance">0.00</div>
-      <div class="total-sub" id="casino-count">0 casinos tracked</div>
-    </div>
+    <!-- DASHBOARD HERO PANEL -->
+    <section class="dashboard-hero-panel">
+      <!-- Left: Total Balance Card -->
+      <div class="dashboard-card primary-balance-card">
+        <div class="card-glow"></div>
+        <div class="total-label">Total Vault Balance</div>
+        <div class="total-amount-wrapper">
+          <span class="currency-symbol">SC</span>
+          <span class="total-amount" id="total-balance">0.00</span>
+        </div>
+        <div class="total-sub" id="casino-count">0 casinos tracked</div>
+        <button class="btn-primary claim-all-btn" style="margin-top:20px;">Deposit / Sync</button>
+      </div>
+      
+      <!-- Right: Placeholder Chart/Stats Card -->
+      <div class="dashboard-card stats-card">
+        <div class="stats-header">
+          <div class="stats-title">Profit Performance</div>
+          <div class="stats-trend positive">↗ +45.20 SC this week</div>
+        </div>
+        <div class="stats-chart-placeholder">
+          <div class="chart-bars">
+            <div class="bar" style="height: 40%"></div>
+            <div class="bar" style="height: 60%"></div>
+            <div class="bar" style="height: 30%"></div>
+            <div class="bar" style="height: 80%"></div>
+            <div class="bar" style="height: 50%"></div>
+            <div class="bar active" style="height: 100%"></div>
+            <div class="bar" style="height: 90%"></div>
+          </div>
+        </div>
+      </div>
+    </section>
 
     <!-- CASINO GRID -->
     <main class="casino-grid" id="casino-grid">
