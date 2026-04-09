@@ -366,54 +366,30 @@ document.getElementById('copy-bookmarklet-btn').addEventListener('click', async 
   setTimeout(() => { confirm.style.display = 'none'; }, 3000);
 });
 
-// ── Supabase realtime sync updates ───────────────────────────────────────────
-let realtimeChannel = null;
-
-function subscribeToUpdates() {
-  if (!currentUser) return;
-  if (realtimeChannel) {
-    sb.removeChannel(realtimeChannel);
-    realtimeChannel = null;
-  }
-  realtimeChannel = sb.channel('casinos_' + currentUser.id)
-    .on('postgres_changes', {
-      event: 'UPDATE',
-      schema: 'public',
-      table: 'casinos',
-      filter: `user_id=eq.${currentUser.id}`
-    }, (payload) => {
-      const idx = userCasinos.findIndex(c => c.id === payload.new.id);
-      if (idx !== -1) {
-        userCasinos[idx] = payload.new;
-        renderCasinos();
-      }
-    })
-    .subscribe();
+// ── Cross-domain token bridge ─────────────────────────────────────────────────
+// If opened by a bookmarklet, send token to opener and close immediately.
+async function checkTokenBridge() {
+  if (!window.opener) return false;
+  const { data: { session } } = await sb.auth.getSession();
+  window.opener.postMessage({
+    type: 'SWEEPVAULT_TOKEN_RESPONSE',
+    access_token: session ? session.access_token : null
+  }, '*');
+  setTimeout(() => window.close(), 200);
+  return true;
 }
 
-// ── Cross-domain token bridge ─────────────────────────────────────────────────
-// Casino sites can't access SweepVault's localStorage directly.
-// We listen for a postMessage request from the bookmarklet and respond with the token.
-window.addEventListener('message', async (e) => {
-  if (e.data && e.data.type === 'SWEEPVAULT_TOKEN_REQUEST') {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) {
-      e.source.postMessage({
-        type: 'SWEEPVAULT_TOKEN_RESPONSE',
-        access_token: session.access_token
-      }, e.origin);
-    }
-  }
-});
-
 // ── Start ─────────────────────────────────────────────────────────────────────
-init().then(() => {
-  if (currentUser) subscribeToUpdates();
-});
-
-sb.auth.onAuthStateChange((_e, session) => {
-  if (session && (!currentUser || currentUser.id !== session.user.id)) {
-    currentUser = session.user;
-    subscribeToUpdates();
+checkTokenBridge().then((isBridge) => {
+  if (!isBridge) {
+    init().then(() => {
+      if (currentUser) subscribeToUpdates();
+    });
+    sb.auth.onAuthStateChange((_e, session) => {
+      if (session && (!currentUser || currentUser.id !== session.user.id)) {
+        currentUser = session.user;
+        subscribeToUpdates();
+      }
+    });
   }
 });
