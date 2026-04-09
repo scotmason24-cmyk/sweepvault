@@ -218,7 +218,7 @@ function renderCasinos() {
   let total = 0;
   sorted.forEach(casino => {
     total += parseFloat(casino.balance) || 0;
-    const { ready, text } = getTimerInfo(casino);
+    const { ready, text, resetTime } = getTimerInfo(casino);
     const card = document.createElement('div');
     card.className = 'casino-card' + (ready ? ' bonus-ready' : '');
     card.dataset.id = casino.id;
