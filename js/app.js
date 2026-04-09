@@ -227,11 +227,15 @@ function renderCasinos() {
       ? timeAgo(new Date(casino.updated_at))
       : 'never';
 
+    const timerLine = ready
+      ? text
+      : (resetTime ? `${text}<span class="timer-reset-time"> · ${resetTime}</span>` : text);
+
     card.innerHTML = `
       <div class="casino-name">${casino.name}</div>
       <div class="casino-balance">${formatBalance(casino.balance)}</div>
       <div class="casino-updated">${updated}</div>
-      <div class="casino-timer" style="color:${ready ? 'var(--green)' : ''}">${text}</div>
+      <div class="casino-timer" style="color:${ready ? 'var(--green)' : ''}">${timerLine}</div>
     `;
 
     card.addEventListener('click', () => openDetailPage(casino));
@@ -244,15 +248,45 @@ function renderCasinos() {
 
 // ── Timer helpers ─────────────────────────────────────────────────────────────
 function getTimerInfo(casino) {
-  const resetHours = parseInt(casino.reset_hours) || 24;
-  if (!casino.last_claimed_at) return { ready: true, text: '✓ Ready' };
+  const resetVal = parseInt(casino.reset_hours) || 24;
+
+  // ── Type 3: Daily reset time (encoded as 10000 + minutes-from-midnight) ──
+  if (resetVal >= 10000) {
+    const minsFromMidnight = resetVal - 10000;
+    const resetHour = Math.floor(minsFromMidnight / 60);
+    const resetMin  = minsFromMidnight % 60;
+
+    const now = new Date();
+    const nextReset = new Date();
+    nextReset.setHours(resetHour, resetMin, 0, 0);
+    if (nextReset <= now) nextReset.setDate(nextReset.getDate() + 1);
+
+    const resetTimeStr = nextReset.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+
+    if (casino.last_claimed_at) {
+      const prevReset = new Date(nextReset);
+      prevReset.setDate(prevReset.getDate() - 1);
+      if (new Date(casino.last_claimed_at) >= prevReset) {
+        // Already claimed this reset window — show countdown to next
+        const remaining = nextReset - now;
+        const h = Math.floor(remaining / 3600000);
+        const m = Math.floor((remaining % 3600000) / 60000);
+        return { ready: false, text: h > 0 ? `${h}h ${m}m` : `${m}m`, resetTime: resetTimeStr };
+      }
+    }
+    return { ready: true, text: '✓ Ready', resetTime: resetTimeStr };
+  }
+
+  // ── Types 1 & 2: Interval reset (6 hr or 24 hr from last claim) ──
+  if (!casino.last_claimed_at) return { ready: true, text: '✓ Ready', resetTime: null };
   const claimedAt = new Date(casino.last_claimed_at).getTime();
-  const resetAt   = claimedAt + resetHours * 3600 * 1000;
+  const resetAt   = claimedAt + resetVal * 3600 * 1000;
   const remaining = resetAt - Date.now();
-  if (remaining <= 0) return { ready: true, text: '✓ Ready' };
+  if (remaining <= 0) return { ready: true, text: '✓ Ready', resetTime: null };
   const h = Math.floor(remaining / 3600000);
   const m = Math.floor((remaining % 3600000) / 60000);
-  return { ready: false, text: h > 0 ? `${h}h ${m}m` : `${m}m` };
+  const resetTimeStr = new Date(resetAt).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+  return { ready: false, text: h > 0 ? `${h}h ${m}m` : `${m}m`, resetTime: resetTimeStr };
 }
 
 let timerInterval = null;
@@ -264,9 +298,14 @@ function startTimerLoop() {
     document.querySelectorAll('.casino-card[data-id]').forEach(card => {
       const casino = userCasinos.find(c => String(c.id) === card.dataset.id);
       if (!casino) return;
-      const { ready, text } = getTimerInfo(casino);
+      const { ready, text, resetTime } = getTimerInfo(casino);
       const timerEl = card.querySelector('.casino-timer');
-      if (timerEl) { timerEl.textContent = text; timerEl.style.color = ready ? 'var(--green)' : ''; }
+      if (timerEl) {
+        timerEl.innerHTML = ready
+          ? text
+          : (resetTime ? `${text}<span class="timer-reset-time"> · ${resetTime}</span>` : text);
+        timerEl.style.color = ready ? 'var(--green)' : '';
+      }
       card.classList.toggle('bonus-ready', ready);
     });
     // If detail page is open, refresh its bonus status too
@@ -275,11 +314,20 @@ function startTimerLoop() {
 }
 
 function updateDetailBonusStatus(casino) {
-  const { ready, text } = getTimerInfo(casino);
+  const { ready, text, resetTime } = getTimerInfo(casino);
   const statusEl = document.getElementById('detail-bonus-status');
   if (statusEl) {
     statusEl.textContent = ready ? '✓ Ready' : text;
     statusEl.className = 'detail-bonus-status' + (ready ? ' ready' : '');
+  }
+  const resetTimeEl = document.getElementById('detail-reset-time-display');
+  if (resetTimeEl) {
+    if (!ready && resetTime) {
+      resetTimeEl.textContent = `Resets at ${resetTime}`;
+      resetTimeEl.style.display = 'block';
+    } else {
+      resetTimeEl.style.display = 'none';
+    }
   }
   const claimBtn = document.getElementById('detail-claim-btn');
   if (claimBtn) claimBtn.disabled = !ready;
@@ -317,9 +365,25 @@ function openDetailPage(casino) {
   document.getElementById('detail-balance-updated').textContent =
     casino.updated_at ? 'Updated ' + timeAgo(new Date(casino.updated_at)) : 'never updated';
 
-  // Bonus section
+  // Bonus section — decode stored reset_hours back to the right select/time input
   const resetSelect = document.getElementById('detail-reset-hours');
-  resetSelect.value = String(casino.reset_hours || 24);
+  const dailyWrap   = document.getElementById('daily-reset-time-wrap');
+  const dailyInput  = document.getElementById('daily-reset-time');
+  const resetVal    = parseInt(casino.reset_hours) || 24;
+
+  if (resetVal >= 10000) {
+    // Daily reset time mode
+    resetSelect.value = 'daily';
+    dailyWrap.style.display = 'flex';
+    const mins = resetVal - 10000;
+    const hh   = String(Math.floor(mins / 60)).padStart(2, '0');
+    const mm   = String(mins % 60).padStart(2, '0');
+    dailyInput.value = `${hh}:${mm}`;
+  } else {
+    resetSelect.value = String(resetVal === 6 ? 6 : 24);
+    dailyWrap.style.display = 'none';
+    dailyInput.value = '';
+  }
   updateDetailBonusStatus(casino);
 
   // Hide app screen, show detail screen
@@ -337,7 +401,19 @@ document.getElementById('detail-back-btn').addEventListener('click', closeDetail
 
 document.getElementById('detail-claim-btn').addEventListener('click', async () => {
   if (!activeCasino) return;
-  const resetHours = parseInt(document.getElementById('detail-reset-hours').value) || 24;
+  const val = document.getElementById('detail-reset-hours').value;
+  let resetHours;
+  if (val === 'daily') {
+    const timeVal = document.getElementById('daily-reset-time').value;
+    if (timeVal) {
+      const [hh, mm] = timeVal.split(':').map(Number);
+      resetHours = 10000 + hh * 60 + mm;
+    } else {
+      resetHours = activeCasino.reset_hours || 24;
+    }
+  } else {
+    resetHours = parseInt(val) || 24;
+  }
   const now = new Date().toISOString();
   await sb.from('casinos').update({
     last_claimed_at: now,
@@ -354,7 +430,32 @@ document.getElementById('detail-claim-btn').addEventListener('click', async () =
 
 document.getElementById('detail-reset-hours').addEventListener('change', async () => {
   if (!activeCasino) return;
-  const resetHours = parseInt(document.getElementById('detail-reset-hours').value) || 24;
+  const val      = document.getElementById('detail-reset-hours').value;
+  const dailyWrap = document.getElementById('daily-reset-time-wrap');
+
+  if (val === 'daily') {
+    // Show the time picker — don't save yet, wait for user to pick a time
+    dailyWrap.style.display = 'flex';
+    return;
+  }
+
+  dailyWrap.style.display = 'none';
+  const resetHours = parseInt(val) || 24;
+  await sb.from('casinos').update({ reset_hours: resetHours })
+    .eq('id', activeCasino.id).eq('user_id', currentUser.id);
+  const casino = userCasinos.find(c => c.id === activeCasino.id);
+  if (casino) casino.reset_hours = resetHours;
+  activeCasino.reset_hours = resetHours;
+  updateDetailBonusStatus(activeCasino);
+  renderCasinos();
+});
+
+document.getElementById('daily-reset-time').addEventListener('change', async () => {
+  if (!activeCasino) return;
+  const timeVal = document.getElementById('daily-reset-time').value; // "HH:MM"
+  if (!timeVal) return;
+  const [hh, mm]   = timeVal.split(':').map(Number);
+  const resetHours = 10000 + hh * 60 + mm; // encoded daily reset time
   await sb.from('casinos').update({ reset_hours: resetHours })
     .eq('id', activeCasino.id).eq('user_id', currentUser.id);
   const casino = userCasinos.find(c => c.id === activeCasino.id);

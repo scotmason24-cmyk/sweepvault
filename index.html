@@ -136,13 +136,17 @@
       <div class="detail-bonus-top">
         <div class="detail-bonus-label">Daily Bonus</div>
         <select class="detail-reset-select" id="detail-reset-hours">
-          <option value="12">12 hr reset</option>
+          <option value="6">6 hr reset</option>
           <option value="24" selected>24 hr reset</option>
-          <option value="36">36 hr reset</option>
-          <option value="48">48 hr reset</option>
+          <option value="daily">Daily reset time</option>
         </select>
       </div>
+      <div class="daily-reset-time-wrap" id="daily-reset-time-wrap" style="display:none">
+        <input type="time" id="daily-reset-time" class="daily-time-input" />
+        <div class="daily-time-hint">Bonus resets at this time each day (local time)</div>
+      </div>
       <div class="detail-bonus-status ready" id="detail-bonus-status">✓ Ready</div>
+      <div class="detail-reset-time-display" id="detail-reset-time-display" style="display:none"></div>
       <button class="btn-claim" id="detail-claim-btn">Mark as Claimed</button>
     </div>
 
