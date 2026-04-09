@@ -404,6 +404,8 @@ function closeDetailPage() {
   document.getElementById('detail-screen').classList.remove('active');
   document.getElementById('app-screen').classList.add('active');
   activeCasino = null;
+  // Always reload from DB so the main screen is never stale
+  loadCasinos();
 }
 
 document.getElementById('detail-back-btn').addEventListener('click', closeDetailPage);
@@ -424,17 +426,29 @@ document.getElementById('detail-claim-btn').addEventListener('click', async () =
     resetHours = parseInt(val) || 24;
   }
   const now = new Date().toISOString();
-  await sb.from('casinos').update({
-    last_claimed_at: now,
-    reset_hours: resetHours
-  }).eq('id', activeCasino.id).eq('user_id', currentUser.id);
-  // Update local state
+
+  // Optimistically update UI first so the user sees instant feedback
   const casino = userCasinos.find(c => c.id === activeCasino.id);
   if (casino) { casino.last_claimed_at = now; casino.reset_hours = resetHours; }
   activeCasino.last_claimed_at = now;
   activeCasino.reset_hours = resetHours;
   updateDetailBonusStatus(activeCasino);
   renderCasinos();
+
+  // Then persist to DB and log any errors
+  const { error } = await sb.from('casinos').update({
+    last_claimed_at: now,
+    reset_hours: resetHours
+  }).eq('id', activeCasino.id).eq('user_id', currentUser.id);
+
+  if (error) {
+    console.error('Claim update failed:', error);
+    // Revert local state if save failed
+    if (casino) { casino.last_claimed_at = null; casino.reset_hours = resetHours; }
+    activeCasino.last_claimed_at = null;
+    updateDetailBonusStatus(activeCasino);
+    renderCasinos();
+  }
 });
 
 document.getElementById('detail-reset-hours').addEventListener('change', async () => {
@@ -554,17 +568,22 @@ document.getElementById('edit-modal').addEventListener('click', (e) => {
 document.getElementById('confirm-edit-balance').addEventListener('click', async () => {
   const balance = document.getElementById('edit-balance').value;
   if (editingCasinoId === null) return;
-  await updateBalance(editingCasinoId, balance);
-  const casino = userCasinos.find(c => c.id === editingCasinoId);
+  // Save id before closeEditModal() nulls it out
+  const savedId = editingCasinoId;
+  await updateBalance(savedId, balance);
+  const casino = userCasinos.find(c => c.id === savedId);
   if (casino) {
     casino.balance = parseFloat(balance) || 0;
     casino.updated_at = new Date().toISOString();
   }
   renderCasinos();
   closeEditModal();
-  // If detail page is open for this casino, refresh it
-  if (activeCasino && activeCasino.id === editingCasinoId) {
-    openDetailPage(casino);
+  // Refresh detail page if it's open for this casino
+  if (activeCasino && activeCasino.id === savedId && casino) {
+    activeCasino.balance = casino.balance;
+    activeCasino.updated_at = casino.updated_at;
+    document.getElementById('detail-balance-amount').textContent = formatBalance(casino.balance);
+    document.getElementById('detail-balance-updated').textContent = 'Updated just now';
   }
 });
 
