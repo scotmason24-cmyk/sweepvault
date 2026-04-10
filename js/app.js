@@ -679,6 +679,8 @@ async function loadCasinoLog(casinoId) {
 }
 
 function renderLogEntries() {
+  renderSnapshots(casinoLogEntries.filter(e => e.entry_type === 'snapshot'));
+  renderDailyBonuses(casinoLogEntries.filter(e => e.entry_type === 'daily_bonus'));
   renderRedemptions(casinoLogEntries.filter(e => e.entry_type === 'redemption'));
   renderPurchases(casinoLogEntries.filter(e => e.entry_type === 'purchase'));
 }
@@ -687,6 +689,54 @@ function formatEntryDate(dateStr) {
   if (!dateStr) return '';
   const d = new Date(dateStr + 'T00:00:00');
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function renderSnapshots(entries) {
+  const list = document.getElementById('snapshots-list');
+  if (!list) return;
+  if (entries.length === 0) {
+    list.innerHTML = '<div class="entries-empty">No scanner snapshots yet</div>';
+    return;
+  }
+  list.innerHTML = `
+    ${entries.map(e => `
+      <div class="entry-item">
+        <div class="entry-main">
+          <span class="entry-amount">$${parseFloat(e.amount || 0).toFixed(2)}</span>
+          <span class="entry-date">${formatEntryDate(e.entry_date)}</span>
+        </div>
+        <button class="entry-delete" data-id="${e.id}">✕</button>
+      </div>
+    `).join('')}
+  `;
+  list.querySelectorAll('.entry-delete').forEach(btn => {
+    btn.addEventListener('click', () => deleteLogEntry(btn.dataset.id));
+  });
+}
+
+function renderDailyBonuses(entries) {
+  const list = document.getElementById('daily-bonuses-list');
+  if (!list) return;
+  if (entries.length === 0) {
+    list.innerHTML = '<div class="entries-empty">No daily bonuses logged</div>';
+    return;
+  }
+  const total = entries.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
+  list.innerHTML = `
+    <div class="entries-total">Total Collected: $${total.toFixed(2)}</div>
+    ${entries.map(e => `
+      <div class="entry-item">
+        <div class="entry-main">
+          <span class="entry-amount" style="color:var(--accent)">$${parseFloat(e.amount || 0).toFixed(2)}</span>
+          <span class="entry-date">${formatEntryDate(e.entry_date)}</span>
+        </div>
+        <button class="entry-delete" data-id="${e.id}">✕</button>
+      </div>
+    `).join('')}
+  `;
+  list.querySelectorAll('.entry-delete').forEach(btn => {
+    btn.addEventListener('click', () => deleteLogEntry(btn.dataset.id));
+  });
 }
 
 function renderRedemptions(entries) {
