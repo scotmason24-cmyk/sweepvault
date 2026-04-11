@@ -425,15 +425,59 @@ select option { background: var(--bg2); }
 
 .casino-card:hover::before { opacity: 1; }
 
+.casino-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.casino-brand {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.casino-icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
 .casino-name {
   font-family: 'Syne', sans-serif;
   font-weight: 700;
   font-size: 13px;
   color: var(--text);
-  margin-bottom: 8px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.casino-site-link {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text2);
+  text-decoration: none;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 999px;
+  transition: all 0.2s;
+}
+
+.casino-site-link:hover {
+  color: var(--gold);
+  border-color: rgba(253, 224, 71, 0.45);
+  background: rgba(253, 224, 71, 0.08);
 }
 
 .casino-balance {

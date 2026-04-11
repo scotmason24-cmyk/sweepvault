@@ -147,6 +147,9 @@ function renderCasinos() {
     const card = document.createElement('div');
     card.className = 'casino-card' + (ready ? ' bonus-ready' : '');
     card.dataset.id = casino.id;
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-label', `Open ${casino.name}`);
 
     const updated = casino.updated_at
       ? timeAgo(new Date(casino.updated_at))
@@ -157,13 +160,39 @@ function renderCasinos() {
       : (resetTime ? `${text}<span class="timer-reset-time"> &middot; ${resetTime}</span>` : text);
 
     card.innerHTML = `
-      <div class="casino-name">${casino.name}</div>
+      <div class="casino-card-top">
+        <div class="casino-brand">
+          <img class="casino-icon" src="${getCasinoIconUrl(casino.domain)}" alt="" loading="lazy" />
+          <div class="casino-name">${casino.name}</div>
+        </div>
+        <a
+          class="casino-site-link"
+          href="https://${casino.domain}"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Open ${casino.name}"
+          title="Open ${casino.name}"
+        >&nearr;</a>
+      </div>
       <div class="casino-balance">${formatBalance(casino.balance)}</div>
       <div class="casino-updated">${updated}</div>
       <div class="casino-timer" style="color:${ready ? 'var(--green)' : ''}">${timerLine}</div>
     `;
 
+    const siteLink = card.querySelector('.casino-site-link');
+    if (siteLink) {
+      siteLink.addEventListener('click', (event) => {
+        event.stopPropagation();
+      });
+    }
+
     card.addEventListener('click', () => openDetailPage(casino));
+    card.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        openDetailPage(casino);
+      }
+    });
     grid.appendChild(card);
   });
 
@@ -259,6 +288,10 @@ function updateDetailBonusStatus(casino) {
 function formatBalance(val) {
   const n = parseFloat(val) || 0;
   return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function getCasinoIconUrl(domain) {
+  return `https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(domain)}`;
 }
 
 function timeAgo(date) {
