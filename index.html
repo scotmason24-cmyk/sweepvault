@@ -54,16 +54,45 @@
 
     <!-- DASHBOARD HERO PANEL -->
     <section class="dashboard-hero-panel">
-      <!-- Total Balance Card -->
-      <div class="dashboard-card primary-balance-card">
-        <div class="card-glow"></div>
-        <div class="total-label">Total Vault Balance</div>
-        <div class="total-amount-wrapper">
-          <span class="currency-symbol">SC</span>
-          <span class="total-amount" id="total-balance">0.00</span>
+      <div class="dashboard-hero-copy">
+        <div class="hero-kicker">Vault Overview</div>
+        <h1 class="hero-title">Your sweepstakes dashboard, cleaned up around what matters.</h1>
+        <p class="hero-subtitle">Track balances, see which bonuses are ready, and jump straight into each casino without the page feeling bloated.</p>
+      </div>
+
+      <div class="dashboard-hero-grid">
+        <div class="dashboard-card primary-balance-card">
+          <div class="card-glow"></div>
+          <div class="total-label">Total Vault Balance</div>
+          <div class="total-amount-wrapper">
+            <span class="currency-symbol">SC</span>
+            <span class="total-amount" id="total-balance">0.00</span>
+          </div>
+          <div class="total-sub" id="casino-count">0 casinos tracked</div>
+          <div class="hero-balance-foot">
+            <span id="hero-last-updated">No recent updates yet</span>
+          </div>
         </div>
-        <div class="total-sub" id="casino-count">0 casinos tracked</div>
-        <button class="btn-primary claim-all-btn" style="margin-top:20px; max-width: 200px;">Deposit / Sync</button>
+
+        <div class="hero-stat-stack">
+          <div class="dashboard-card hero-stat-card">
+            <div class="hero-stat-label">Ready Bonuses</div>
+            <div class="hero-stat-value" id="ready-count">0</div>
+            <div class="hero-stat-sub">casinos ready to claim</div>
+          </div>
+
+          <div class="dashboard-card hero-stat-card">
+            <div class="hero-stat-label">Fresh Updates</div>
+            <div class="hero-stat-value" id="fresh-count">0</div>
+            <div class="hero-stat-sub">updated in the last 24 hours</div>
+          </div>
+
+          <div class="dashboard-card hero-stat-card">
+            <div class="hero-stat-label">Average Balance</div>
+            <div class="hero-stat-value" id="average-balance">0.00</div>
+            <div class="hero-stat-sub">SC per tracked casino</div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -122,11 +151,37 @@
     </header>
 
     <div class="detail-hero">
-      <div class="detail-hero-name" id="detail-hero-name">Casino</div>
-      <div class="detail-hero-domain" id="detail-hero-domain">casino.com</div>
-      <a class="btn-open-site" id="detail-open-site-btn" href="#" target="_blank" rel="noopener noreferrer">
-        Open Casino Site &nearr;
-      </a>
+      <div class="detail-hero-shell">
+        <div class="detail-hero-brand">
+          <img class="detail-hero-icon" id="detail-hero-icon" alt="" />
+          <div class="detail-hero-copy">
+            <div class="detail-hero-name" id="detail-hero-name">Casino</div>
+            <div class="detail-hero-domain" id="detail-hero-domain">casino.com</div>
+          </div>
+        </div>
+
+        <div class="detail-hero-actions">
+          <button class="btn-open-overlay" id="detail-open-overlay-btn">Open Overlay</button>
+          <a class="btn-open-site" id="detail-open-site-btn" href="#" target="_blank" rel="noopener noreferrer">
+            Visit Site &nearr;
+          </a>
+        </div>
+
+        <div class="detail-mini-stats">
+          <div class="detail-mini-stat">
+            <span>Current Balance</span>
+            <strong id="detail-hero-balance">0.00</strong>
+          </div>
+          <div class="detail-mini-stat">
+            <span>Bonus Status</span>
+            <strong id="detail-hero-bonus-status">Ready</strong>
+          </div>
+          <div class="detail-mini-stat">
+            <span>Last Update</span>
+            <strong id="detail-hero-updated">never</strong>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- TABS -->
@@ -137,32 +192,34 @@
 
     <!-- OVERVIEW TAB -->
     <div id="tab-overview">
-      <div class="detail-balance-card">
-        <div class="detail-balance-label">SC Balance</div>
-        <div class="detail-balance-amount" id="detail-balance-amount">0.00</div>
-        <div class="detail-balance-footer">
-          <span id="detail-balance-updated">never updated</span>
-          <button class="btn-edit-inline" id="detail-edit-balance-btn">Edit</button>
+      <div class="detail-overview-grid">
+        <div class="detail-balance-card">
+          <div class="detail-balance-label">SC Balance</div>
+          <div class="detail-balance-amount" id="detail-balance-amount">0.00</div>
+          <div class="detail-balance-footer">
+            <span id="detail-balance-updated">never updated</span>
+            <button class="btn-edit-inline" id="detail-edit-balance-btn">Edit</button>
+          </div>
         </div>
-      </div>
 
-      <!-- BONUS TIMER CARD -->
-      <div class="detail-bonus-card">
-        <div class="detail-bonus-top">
-          <div class="detail-bonus-label">Daily Bonus</div>
-          <select class="detail-reset-select" id="detail-reset-hours">
-            <option value="6">6 hr reset</option>
-            <option value="24" selected>24 hr reset</option>
-            <option value="daily">Daily reset time</option>
-          </select>
+        <!-- BONUS TIMER CARD -->
+        <div class="detail-bonus-card">
+          <div class="detail-bonus-top">
+            <div class="detail-bonus-label">Daily Bonus</div>
+            <select class="detail-reset-select" id="detail-reset-hours">
+              <option value="6">6 hr reset</option>
+              <option value="24" selected>24 hr reset</option>
+              <option value="daily">Daily reset time</option>
+            </select>
+          </div>
+          <div class="daily-reset-time-wrap" id="daily-reset-time-wrap" style="display:none">
+            <input type="time" id="daily-reset-time" class="daily-time-input" />
+            <div class="daily-time-hint">Bonus resets at this time each day (local time)</div>
+          </div>
+          <div class="detail-bonus-status ready" id="detail-bonus-status">&#10003; Ready</div>
+          <div class="detail-reset-time-display" id="detail-reset-time-display" style="display:none"></div>
+          <button class="btn-claim" id="detail-claim-btn">Mark as Claimed</button>
         </div>
-        <div class="daily-reset-time-wrap" id="daily-reset-time-wrap" style="display:none">
-          <input type="time" id="daily-reset-time" class="daily-time-input" />
-          <div class="daily-time-hint">Bonus resets at this time each day (local time)</div>
-        </div>
-        <div class="detail-bonus-status ready" id="detail-bonus-status">&#10003; Ready</div>
-        <div class="detail-reset-time-display" id="detail-reset-time-display" style="display:none"></div>
-        <button class="btn-claim" id="detail-claim-btn">Mark as Claimed</button>
       </div>
 
       <div class="detail-sections">

@@ -61,7 +61,12 @@ function renderSnapshots(entries) {
 
 function renderDailyBonuses(entries) {
   const list = document.getElementById('daily-bonuses-list');
+  const countBadge = document.getElementById('detail-bonus-count');
   if (!list) return;
+
+  if (countBadge) {
+    countBadge.textContent = String(entries.length);
+  }
 
   if (entries.length === 0) {
     list.innerHTML = '<div class="entries-empty">No daily bonuses logged</div>';

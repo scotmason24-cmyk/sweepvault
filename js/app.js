@@ -118,6 +118,10 @@ function renderCasinos() {
   const empty = document.getElementById('empty-state');
   const totalEl = document.getElementById('total-balance');
   const countEl = document.getElementById('casino-count');
+  const readyCountEl = document.getElementById('ready-count');
+  const freshCountEl = document.getElementById('fresh-count');
+  const averageBalanceEl = document.getElementById('average-balance');
+  const heroLastUpdatedEl = document.getElementById('hero-last-updated');
 
   // Clear existing cards (keep empty state)
   Array.from(grid.querySelectorAll('.casino-card')).forEach(c => c.remove());
@@ -126,6 +130,10 @@ function renderCasinos() {
     empty.style.display = 'flex';
     totalEl.textContent = '0.00';
     countEl.textContent = '0 casinos tracked';
+    if (readyCountEl) readyCountEl.textContent = '0';
+    if (freshCountEl) freshCountEl.textContent = '0';
+    if (averageBalanceEl) averageBalanceEl.textContent = '0.00';
+    if (heroLastUpdatedEl) heroLastUpdatedEl.textContent = 'No recent updates yet';
     return;
   }
 
@@ -141,9 +149,13 @@ function renderCasinos() {
   });
 
   let total = 0;
+  let readyCount = 0;
+  let freshCount = 0;
+  let latestUpdatedAt = null;
   sorted.forEach(casino => {
     total += parseFloat(casino.balance) || 0;
     const { ready, text, resetTime } = getTimerInfo(casino);
+    if (ready) readyCount += 1;
     const card = document.createElement('div');
     card.className = 'casino-card' + (ready ? ' bonus-ready' : '');
     card.dataset.id = casino.id;
@@ -155,6 +167,18 @@ function renderCasinos() {
       ? timeAgo(new Date(casino.updated_at))
       : 'never';
 
+    if (casino.updated_at) {
+      const updatedAt = new Date(casino.updated_at);
+      if (!Number.isNaN(updatedAt.getTime())) {
+        if (!latestUpdatedAt || updatedAt > latestUpdatedAt) {
+          latestUpdatedAt = updatedAt;
+        }
+        if (Date.now() - updatedAt.getTime() <= 24 * 60 * 60 * 1000) {
+          freshCount += 1;
+        }
+      }
+    }
+
     const timerLine = ready
       ? text
       : (resetTime ? `${text}<span class="timer-reset-time"> &middot; ${resetTime}</span>` : text);
@@ -165,21 +189,36 @@ function renderCasinos() {
           <img class="casino-icon" src="${getCasinoIconUrl(casino.domain)}" alt="" loading="lazy" />
           <div class="casino-name">${casino.name}</div>
         </div>
-        <a
-          class="casino-site-link"
-          href="https://${casino.domain}"
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Open ${casino.name}"
-          title="Open ${casino.name}"
-        >&nearr;</a>
+        <div class="casino-card-actions">
+          <button
+            class="casino-overlay-link"
+            type="button"
+            aria-label="Open ${casino.name} overlay"
+            title="Open ${casino.name} overlay"
+          >OV</button>
+          <a
+            class="casino-site-link"
+            href="https://${casino.domain}"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Visit ${casino.name}"
+            title="Visit ${casino.name}"
+          >&nearr;</a>
+        </div>
       </div>
       <div class="casino-balance">${formatBalance(casino.balance)}</div>
       <div class="casino-updated">${updated}</div>
       <div class="casino-timer" style="color:${ready ? 'var(--green)' : ''}">${timerLine}</div>
     `;
 
+    const overlayLink = card.querySelector('.casino-overlay-link');
     const siteLink = card.querySelector('.casino-site-link');
+    if (overlayLink) {
+      overlayLink.addEventListener('click', (event) => {
+        event.stopPropagation();
+        triggerCasinoOverlay(casino.id);
+      });
+    }
     if (siteLink) {
       siteLink.addEventListener('click', (event) => {
         event.stopPropagation();
@@ -198,6 +237,14 @@ function renderCasinos() {
 
   totalEl.textContent = formatBalance(total);
   countEl.textContent = `${userCasinos.length} casino${userCasinos.length !== 1 ? 's' : ''} tracked`;
+  if (readyCountEl) readyCountEl.textContent = String(readyCount);
+  if (freshCountEl) freshCountEl.textContent = String(freshCount);
+  if (averageBalanceEl) averageBalanceEl.textContent = formatBalance(total / userCasinos.length);
+  if (heroLastUpdatedEl) {
+    heroLastUpdatedEl.textContent = latestUpdatedAt
+      ? `Latest update ${timeAgo(latestUpdatedAt)}`
+      : 'No recent updates yet';
+  }
 }
 
 // ── Timer helpers ─────────────────────────────────────────────────────────────
@@ -272,6 +319,11 @@ function updateDetailBonusStatus(casino) {
     statusEl.textContent = ready ? '✓ Ready' : text;
     statusEl.className = 'detail-bonus-status' + (ready ? ' ready' : '');
   }
+  const heroStatusEl = document.getElementById('detail-hero-bonus-status');
+  if (heroStatusEl) {
+    heroStatusEl.textContent = ready ? 'Ready' : text;
+    heroStatusEl.style.color = ready ? 'var(--green)' : 'var(--text)';
+  }
   const resetTimeEl = document.getElementById('detail-reset-time-display');
   if (resetTimeEl) {
     if (!ready && resetTime) {
@@ -294,6 +346,14 @@ function getCasinoIconUrl(domain) {
   return `https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(domain)}`;
 }
 
+function triggerCasinoOverlay(casinoId) {
+  const iframe = document.createElement('iframe');
+  iframe.src = `casinotracker://open?casinoId=${casinoId}`;
+  iframe.style.display = 'none';
+  document.body.appendChild(iframe);
+  setTimeout(() => iframe.remove(), 1000);
+}
+
 function timeAgo(date) {
   const diff = Math.floor((Date.now() - date) / 1000);
   if (diff < 60) return 'just now';
@@ -306,32 +366,28 @@ function timeAgo(date) {
 function openDetailPage(casino) {
   activeCasino = casino;
   const siteUrl = `https://${casino.domain}`;
+  const updatedText = casino.updated_at ? 'Updated ' + timeAgo(new Date(casino.updated_at)) : 'never updated';
 
   // Header
   document.getElementById('detail-casino-name').textContent = casino.name;
   document.getElementById('detail-open-site').href = siteUrl;
 
   // Hero
+  document.getElementById('detail-hero-icon').src = getCasinoIconUrl(casino.domain);
+  document.getElementById('detail-hero-icon').alt = `${casino.name} icon`;
   document.getElementById('detail-hero-name').textContent = casino.name;
   document.getElementById('detail-hero-domain').textContent = casino.domain;
   document.getElementById('detail-open-site-btn').href = siteUrl;
+  document.getElementById('detail-hero-balance').textContent = `${formatBalance(casino.balance)} SC`;
+  document.getElementById('detail-hero-updated').textContent = updatedText;
   
-  // Custom Protocol Deep Link
-  const triggerOverlay = () => {
-    const iframe = document.createElement('iframe');
-    iframe.src = `casinotracker://open?casinoId=${casino.id}`;
-    iframe.style.display = 'none';
-    document.body.appendChild(iframe);
-    setTimeout(() => iframe.remove(), 1000);
-  };
-  
-  document.getElementById('detail-open-site').onclick = triggerOverlay;
-  document.getElementById('detail-open-site-btn').onclick = triggerOverlay;
+  document.getElementById('detail-open-site').onclick = null;
+  document.getElementById('detail-open-site-btn').onclick = null;
+  document.getElementById('detail-open-overlay-btn').onclick = () => triggerCasinoOverlay(casino.id);
 
   // Balance card
   document.getElementById('detail-balance-amount').textContent = formatBalance(casino.balance);
-  document.getElementById('detail-balance-updated').textContent =
-    casino.updated_at ? 'Updated ' + timeAgo(new Date(casino.updated_at)) : 'never updated';
+  document.getElementById('detail-balance-updated').textContent = updatedText;
 
   // Bonus section - decode stored reset_hours back to the right select/time input
   const resetSelect = document.getElementById('detail-reset-hours');
@@ -362,6 +418,7 @@ function openDetailPage(casino) {
 
   // Notes field
   document.getElementById('casino-notes').value = casino.notes || '';
+  document.getElementById('detail-bonus-count').textContent = '0';
 
   // Hide app screen, show detail screen
   document.getElementById('app-screen').classList.remove('active');
@@ -552,6 +609,8 @@ document.getElementById('confirm-edit-balance').addEventListener('click', async 
     activeCasino.updated_at = casino.updated_at;
     document.getElementById('detail-balance-amount').textContent = formatBalance(casino.balance);
     document.getElementById('detail-balance-updated').textContent = 'Updated just now';
+    document.getElementById('detail-hero-balance').textContent = `${formatBalance(casino.balance)} SC`;
+    document.getElementById('detail-hero-updated').textContent = 'Updated just now';
   }
 });
 
