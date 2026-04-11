@@ -560,8 +560,7 @@ select option { background: var(--bg2); }
   text-overflow: ellipsis;
 }
 
-.casino-overlay-link,
-.casino-site-link {
+.casino-launch-link {
   width: 28px;
   height: 28px;
   display: inline-flex;
@@ -574,18 +573,14 @@ select option { background: var(--bg2); }
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 999px;
   transition: all 0.2s;
-}
-
-.casino-overlay-link {
   font-family: 'Syne', sans-serif;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   cursor: pointer;
 }
 
-.casino-overlay-link:hover,
-.casino-site-link:hover {
+.casino-launch-link:hover {
   color: var(--gold);
   border-color: rgba(253, 224, 71, 0.45);
   background: rgba(253, 224, 71, 0.08);

@@ -161,7 +161,7 @@ function renderCasinos() {
     card.dataset.id = casino.id;
     card.tabIndex = 0;
     card.setAttribute('role', 'button');
-    card.setAttribute('aria-label', `Open ${casino.name}`);
+    card.setAttribute('aria-label', `Open ${casino.name} in app and browser`);
 
     const updated = casino.updated_at
       ? timeAgo(new Date(casino.updated_at))
@@ -191,19 +191,11 @@ function renderCasinos() {
         </div>
         <div class="casino-card-actions">
           <button
-            class="casino-overlay-link"
+            class="casino-launch-link"
             type="button"
-            aria-label="Open ${casino.name} overlay"
-            title="Open ${casino.name} overlay"
-          >OV</button>
-          <a
-            class="casino-site-link"
-            href="https://${casino.domain}"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Visit ${casino.name}"
-            title="Visit ${casino.name}"
-          >&nearr;</a>
+            aria-label="Open ${casino.name} in app and browser"
+            title="Open ${casino.name} in app and browser"
+          >Go</button>
         </div>
       </div>
       <div class="casino-balance">${formatBalance(casino.balance)}</div>
@@ -211,25 +203,19 @@ function renderCasinos() {
       <div class="casino-timer" style="color:${ready ? 'var(--green)' : ''}">${timerLine}</div>
     `;
 
-    const overlayLink = card.querySelector('.casino-overlay-link');
-    const siteLink = card.querySelector('.casino-site-link');
-    if (overlayLink) {
-      overlayLink.addEventListener('click', (event) => {
+    const launchLink = card.querySelector('.casino-launch-link');
+    if (launchLink) {
+      launchLink.addEventListener('click', (event) => {
         event.stopPropagation();
-        triggerCasinoOverlay(casino.id);
-      });
-    }
-    if (siteLink) {
-      siteLink.addEventListener('click', (event) => {
-        event.stopPropagation();
+        launchCasinoWorkspace(casino);
       });
     }
 
-    card.addEventListener('click', () => openDetailPage(casino));
+    card.addEventListener('click', () => launchCasinoWorkspace(casino));
     card.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        openDetailPage(casino);
+        launchCasinoWorkspace(casino);
       }
     });
     grid.appendChild(card);
@@ -352,6 +338,11 @@ function triggerCasinoOverlay(casinoId) {
   iframe.style.display = 'none';
   document.body.appendChild(iframe);
   setTimeout(() => iframe.remove(), 1000);
+}
+
+function launchCasinoWorkspace(casino) {
+  triggerCasinoOverlay(casino.id);
+  window.open(`https://${casino.domain}`, '_blank', 'noopener,noreferrer');
 }
 
 function timeAgo(date) {
