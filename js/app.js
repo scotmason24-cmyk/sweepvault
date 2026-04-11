@@ -359,6 +359,18 @@ function openDetailPage(casino) {
   document.getElementById('detail-hero-name').textContent = casino.name;
   document.getElementById('detail-hero-domain').textContent = casino.domain;
   document.getElementById('detail-open-site-btn').href = siteUrl;
+  
+  // Custom Protocol Deep Link
+  const triggerOverlay = () => {
+    const iframe = document.createElement('iframe');
+    iframe.src = `casinotracker://open?casinoId=${casino.id}`;
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+    setTimeout(() => iframe.remove(), 1000);
+  };
+  
+  document.getElementById('detail-open-site').onclick = triggerOverlay;
+  document.getElementById('detail-open-site-btn').onclick = triggerOverlay;
 
   // Balance card
   document.getElementById('detail-balance-amount').textContent = formatBalance(casino.balance);
