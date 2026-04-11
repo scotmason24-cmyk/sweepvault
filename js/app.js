@@ -1,93 +1,19 @@
-// ── Site config (all your casinos) ──────────────────────────────────────────
-const SITE_CONFIG = {
-  "fortunecoins.com":      { name: "Fortune Coins",    selector: ".FCButtonItem.FCoins div.textDecimals.mobile span" },
-  "megabonanza.com":       { name: "Mega Bonanza",      selector: "span[class*='currencyValue'][style*='width']" },
-  "rolla.com":             { name: "Rolla",             selector: "div.ring-sweep-400:has(img[alt='RSC coin icon']) span" },
-  "rollingriches.com":     { name: "Rolling Riches",    selector: "div.sc-coin.active span:not(.coin-amount)" },
-  "modo.us":               { name: "Modo",              selector: "button[data-testid='sc-button'] p span" },
-  "rebet.app":             { name: "Rebet",             selector: ".MuiBox-root:has(img[src*='sc-icon']) span.MuiTypography-root" },
-  "chanced.com":           { name: "Chanced",           selector: "header button:has(img[src*='cash']) span" },
-  "goldenheartsgames.com": { name: "Golden Hearts",     selector: "button[data-testid='current-currency-balance-info']" },
-  "shuffle.us":            { name: "Shuffle",           selector: "button#SC" },
-  "globalpoker.com":       { name: "Global Poker",      selector: "div#sc-balance-display" },
-  "punt.com":              { name: "Punt",              selector: ".shrink.truncate" },
-  "playfame.com":          { name: "PlayFame",          selector: "span:has(> span[class*='currencyName'])" },
-  "luckparty.com":         { name: "Luckparty",         selector: ".sc-part" },
-  "sportzino.com":         { name: "Sportzino",         selector: ".balance-switcher-button-fc" },
-  "clubs.poker":           { name: "Clubs Poker",       selector: ".SwitchCurrenciesContainer__currency_balance" },
-  "high5casino.com":       { name: "High5",             selector: ".sweeps-balance.sc .sweeps-balance-label-amount" },
-  "yaycasino.com":         { name: "Yay Casino",        selector: ".FCButtonItem.FCoins" },
-  "americanluck.com":      { name: "American Luck",     selector: ".balance-switch__value-button--sc" },
-  "zulacasino.com":        { name: "Zula",              selector: ".FCButtonItem.FCoins" },
-  "moozi.com":             { name: "Moozi",             selector: "#silver-coin-trigger span" },
-  "moonspin.us":           { name: "Moonspin",          selector: "button:has(img[src*='sweep-coin'])" },
-  "lonestarcasino.com":    { name: "LoneStar",          selector: ".gcnum .gct" },
-  "realprize.com":         { name: "RealPrize",         selector: "div.gcnum span.gct" },
-  "crowncoinscasino.com":  { name: "CrownCoins",        selector: "[data-testid='lobby-balance-bar']" },
-  "pulsz.com":             { name: "Pulsz",             selector: "[data-test='header-sweepstakes-value']" },
-  "wowvegas.com":          { name: "WOW Vegas",         selector: "button[id^='headlessui-menu-button'] div.flex-none" },
-  "chumbacasino.com":      { name: "Chumba Casino",     selector: "#top-hud__currency-bar__sweeps-currency-amount span.counter__value" },
-  "sidepot.us":            { name: "Sidepot",           selector: "button:has(img[src*='sweep-coin'])" },
-  "spree.com":             { name: "Spree",             selector: "number-flow-react[aria-label]" },
-  "spinpals.com":          { name: "SpinPals",          selector: "div.border-deepPurple-300 p.text-white" },
-  "stake.us":              { name: "Stake",             selector: "span.ds-body-md-strong[style*='max-width: 16ch']" },
-  "spinquest.com":         { name: "SpinQuest",         selector: "p[data-sentry-source-file='amounts.tsx']" },
-  "coinz.us":              { name: "Coinz",             selector: "#player-balance-value" },
-  "legendz.com":           { name: "Legendz",           selector: "div[class*='eyrgspp0']" },
-  "dogghousecasino.com":   { name: "Dogghouse",         selector: ".MuiBox-root:has(img[src*='sc-icon']) span.MuiTypography-root" },
-  "chipnwin.com":          { name: "ChipnWin",          selector: ".nav-bar-header__top div.flex_center_between.background_282D44.pointer" },
-  "sweetsweeps.com":       { name: "SweetSweeps",       selector: ".MuiBox-root:has(img[src*='sc-icon.png']) > span.MuiTypography-root" },
-  "lunalandcasino.com":    { name: "LunaLand",          selector: "span#balance-sc-coin" },
-  "myprize.us":            { name: "MyPrize",           selector: ".active-currency-section .amount" },
-  "ace.com":               { name: "Ace",               selector: "[data-test='sc-balance'] span[class*='currencyValue']" },
-  "goldmachine.com":       { name: "Gold Machine",      selector: "button:has(span[class*='tabular-nums'])" },
-  "spindoo.us":            { name: "Spindoo",           selector: "div[data-test='sc-balance'] span" },
-  "jackpota.com":          { name: "Jackpota",          selector: "div:has(img[alt='SC icon']):has(button[aria-label='Info']) span" },
-  "mcluck.com":            { name: "McLuck",            selector: "span[data-test='common-header-sc-value']" },
-  "hellomillions.com":     { name: "Hello Millions",    selector: "div[data-test='sc-balance'] span" },
-  "spinblitz.com":         { name: "SpinBlitz",         selector: "span[data-test='sc-balance-value']" },
-  "zoot.us":               { name: "Zoot",              selector: "span.chakra-text" },
-  "sheeshcasino.com":      { name: "Sheesh",            selector: "div:has(img[src*='sc-icon']) span.text-lime-500" },
-  "sweepjungle.com":       { name: "SweepJungle",       selector: "p.font-lilita" },
-  "cashoomo.com":          { name: "Cashoomo",          selector: "span.coins__balance" },
-  "vegawin.com":           { name: "Vegawin",           selector: "span.sidebar-balance:has(img[alt='Silver'])" },
-  "sweepsusa.com":         { name: "Sweep USA",         selector: "div:has(img[src*='notes.svg']) span" },
-  "luckyhands.com":        { name: "LuckyHands",        selector: "span[style*='--accent-acid']" },
-  "epicsweep.us":          { name: "Epic Sweeps",       selector: "span.text-primary.font-bold" },
-  "sixty6.com":            { name: "Sixty6",            selector: "p.font-lato.text-neutral-100" },
-  "luckyone.us":           { name: "Luckyone",          selector: "span.text-shade-10.font-extrabold" },
-  "luckystake.com":        { name: "Lucky Stake",       selector: "WAITING_FOR_SELECTOR" },
-  "babacasino.com":        { name: "Baba Casino",       selector: "" },
-  "daracasino.com":        { name: "Dara Casino",       selector: "" },
-  "luckylandslots.com":    { name: "LuckyLand Slots",   selector: "" },
-  "luckylandcasino.com":   { name: "LuckyLand Casino",  selector: "" },
-};
-
-// ── App state ────────────────────────────────────────────────────────────────
-let currentUser = null;
-let userCasinos = [];
-let editingCasinoId = null;
-let activeCasino = null;       // casino object currently shown in detail view
-
-// ── Init ─────────────────────────────────────────────────────────────────────
-async function init() {
-  const { data: { session } } = await sb.auth.getSession();
+function handleSessionChange(session) {
   if (session) {
     currentUser = session.user;
     showApp();
-  } else {
-    showAuth();
+    subscribeToUpdates();
+    return;
   }
 
-  sb.auth.onAuthStateChange((_event, session) => {
-    if (session) {
-      currentUser = session.user;
-      showApp();
-    } else {
-      currentUser = null;
-      showAuth();
-    }
-  });
+  currentUser = null;
+  unsubscribeFromUpdates();
+  showAuth();
+}
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  handleSessionChange(session);
+  sb.auth.onAuthStateChange((_event, nextSession) => handleSessionChange(nextSession));
 }
 
 // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -103,7 +29,6 @@ function showApp() {
   startTimerLoop();
 }
 
-let isLogin = true;
 
 document.getElementById('login-tab').addEventListener('click', () => {
   isLogin = true;
@@ -229,7 +154,7 @@ function renderCasinos() {
 
     const timerLine = ready
       ? text
-      : (resetTime ? `${text}<span class="timer-reset-time"> · ${resetTime}</span>` : text);
+      : (resetTime ? `${text}<span class="timer-reset-time"> &middot; ${resetTime}</span>` : text);
 
     card.innerHTML = `
       <div class="casino-name">${casino.name}</div>
@@ -267,7 +192,7 @@ function getTimerInfo(casino) {
       const prevReset = new Date(nextReset);
       prevReset.setDate(prevReset.getDate() - 1);
       if (new Date(casino.last_claimed_at) >= prevReset) {
-        // Already claimed this reset window — show countdown to next
+        // Already claimed this reset window - show countdown to next
         const remaining = nextReset - now;
         const h = Math.floor(remaining / 3600000);
         const m = Math.floor((remaining % 3600000) / 60000);
@@ -289,8 +214,6 @@ function getTimerInfo(casino) {
   return { ready: false, text: h > 0 ? `${h}h ${m}m` : `${m}m`, resetTime: resetTimeStr };
 }
 
-let timerInterval = null;
-
 function startTimerLoop() {
   if (timerInterval) clearInterval(timerInterval);
   timerInterval = setInterval(() => {
@@ -303,7 +226,7 @@ function startTimerLoop() {
       if (timerEl) {
         timerEl.innerHTML = ready
           ? text
-          : (resetTime ? `${text}<span class="timer-reset-time"> · ${resetTime}</span>` : text);
+          : (resetTime ? `${text}<span class="timer-reset-time"> &middot; ${resetTime}</span>` : text);
         timerEl.style.color = ready ? 'var(--green)' : '';
       }
       card.classList.toggle('bonus-ready', ready);
@@ -377,7 +300,7 @@ function openDetailPage(casino) {
   document.getElementById('detail-balance-updated').textContent =
     casino.updated_at ? 'Updated ' + timeAgo(new Date(casino.updated_at)) : 'never updated';
 
-  // Bonus section — decode stored reset_hours back to the right select/time input
+  // Bonus section - decode stored reset_hours back to the right select/time input
   const resetSelect = document.getElementById('detail-reset-hours');
   const dailyWrap   = document.getElementById('daily-reset-time-wrap');
   const dailyInput  = document.getElementById('daily-reset-time');
@@ -469,7 +392,7 @@ document.getElementById('detail-reset-hours').addEventListener('change', async (
   const dailyWrap = document.getElementById('daily-reset-time-wrap');
 
   if (val === 'daily') {
-    // Show the time picker — don't save yet, wait for user to pick a time
+    // Show the time picker - don't save yet, wait for user to pick a time
     dailyWrap.style.display = 'flex';
     return;
   }
@@ -608,61 +531,11 @@ document.getElementById('remove-casino-btn').addEventListener('click', async () 
   closeEditModal();
 });
 
-// ── Bookmarklet Modal ─────────────────────────────────────────────────────────
-function buildBookmarklet() {
-  const appUrl = window.location.origin + window.location.pathname;
-  // Minified bookmarklet code
-  const code = `javascript:(function(){var SITE_CONFIG=${JSON.stringify(SITE_CONFIG)};var appUrl="${appUrl}";var h=window.location.hostname;var domain=Object.keys(SITE_CONFIG).find(function(d){return h.includes(d)});if(!domain){alert('SweepVault: This site is not supported.');return;}var cfg=SITE_CONFIG[domain];var el=null;var selectors=document.querySelectorAll(cfg.selector);if(selectors.length>1){el=Array.from(selectors).find(function(e){var t=String(e.textContent||'');return t.toUpperCase().includes('SC')&&/\\d/.test(t);})||Array.from(selectors).find(function(e){return/\\d/.test(String(e.textContent||''));});}else if(selectors.length===1){el=selectors[0];}if(!el&&cfg.selector.includes('aria-label')){var ae=document.querySelector(cfg.selector);if(ae){var av=ae.getAttribute('aria-label');if(av&&/\\d/.test(av))el={textContent:av};}}if(!el){alert('SweepVault: Could not find balance on '+cfg.name+'. Make sure you are logged in.');return;}var raw=String(el.textContent||'').trim().replace(/[kM]/g,'');var clean=raw.replace(/,/g,'');var matches=clean.match(/\\d+(\\.\\d+)?/g);var bal='0';if(matches){var dec=matches.find(function(m){return m.includes('.');});bal=dec||matches[0];}if(h.includes('fortunecoins.com')){bal=(parseFloat(bal)/100).toFixed(2);}function doSync(accessToken){fetch('https://wqkihxadcxmxgicixlww.supabase.co/rest/v1/rpc/sync_balance',{method:'POST',headers:{'Content-Type':'application/json','apikey':'sb_publishable_vgt7oNKoGwJyDsCvVmYMXw_Y3APibq4','Authorization':'Bearer '+accessToken},body:JSON.stringify({p_domain:domain,p_balance:parseFloat(bal)})}).then(function(r){if(r.ok){var d=document.createElement('div');d.style.cssText='position:fixed;top:20px;right:20px;background:#110d1f;border:2px solid #a78bfa;color:#a78bfa;padding:12px 20px;border-radius:10px;font-family:monospace;font-size:14px;z-index:999999;';d.textContent='\\u2713 SweepVault: '+cfg.name+' synced ('+bal+' SC)';document.body.appendChild(d);setTimeout(function(){d.remove();},3000);}else{alert('SweepVault: Sync failed ('+r.status+'). Please try again.');}}).catch(function(){alert('SweepVault: Network error.');});}var svWin=window.open(appUrl,'sweepvault_token','width=1,height=1,top=-100,left=-100');var timeout=setTimeout(function(){if(svWin)svWin.close();alert('SweepVault: Could not get token. Make sure you are signed in at '+appUrl);},8000);window.addEventListener('message',function handler(ev){if(ev.data&&ev.data.type==='SWEEPVAULT_TOKEN_RESPONSE'){clearTimeout(timeout);if(svWin)svWin.close();window.removeEventListener('message',handler);doSync(ev.data.access_token);}});var pollCount=0;var poll=setInterval(function(){pollCount++;if(pollCount>40){clearInterval(poll);return;}try{if(svWin&&svWin.document&&svWin.document.readyState==='complete'){clearInterval(poll);svWin.postMessage({type:'SWEEPVAULT_TOKEN_REQUEST'},appUrl);}}catch(e){}},100);})();`;
-  return code;
-}
-
-document.getElementById('bookmarklet-btn').addEventListener('click', () => {
-  document.getElementById('bookmarklet-modal').classList.add('open');
-});
-
-document.getElementById('close-bookmarklet-modal').addEventListener('click', () => {
-  document.getElementById('bookmarklet-modal').classList.remove('open');
-});
-
-document.getElementById('bookmarklet-modal').addEventListener('click', (e) => {
-  if (e.target === e.currentTarget) document.getElementById('bookmarklet-modal').classList.remove('open');
-});
-
-document.getElementById('copy-bookmarklet-btn').addEventListener('click', async () => {
-  const code = buildBookmarklet();
-  try {
-    await navigator.clipboard.writeText(code);
-  } catch {
-    // Fallback
-    const ta = document.createElement('textarea');
-    ta.value = code;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    ta.remove();
-  }
-  const confirm = document.getElementById('copy-confirm');
-  confirm.style.display = 'block';
-  setTimeout(() => { confirm.style.display = 'none'; }, 3000);
-});
-
-// ── Cross-domain token bridge ─────────────────────────────────────────────────
-// If opened by a bookmarklet, send token to opener and close immediately.
-async function checkTokenBridge() {
-  if (!window.opener) return false;
-  const { data: { session } } = await sb.auth.getSession();
-  window.opener.postMessage({
-    type: 'SWEEPVAULT_TOKEN_RESPONSE',
-    access_token: session ? session.access_token : null
-  }, '*');
-  setTimeout(() => window.close(), 200);
-  return true;
-}
-
-// ── Realtime ──────────────────────────────────────────────────────────────────
+// Realtime updates
 function subscribeToUpdates() {
   if (!currentUser) return;
-  sb.channel('casinos-changes')
+  unsubscribeFromUpdates();
+  casinosChannel = sb.channel(`casinos-changes-${currentUser.id}`)
     .on('postgres_changes', {
       event: '*',
       schema: 'public',
@@ -674,240 +547,11 @@ function subscribeToUpdates() {
     .subscribe();
 }
 
-// ── My Records Tab ───────────────────────────────────────────────────────────
-let casinoLogEntries = [];
-let notesDebounceTimer = null;
-
-async function loadCasinoLog(casinoId) {
-  const { data, error } = await sb
-    .from('casino_log')
-    .select('*')
-    .eq('casino_id', casinoId)
-    .eq('user_id', currentUser.id)
-    .order('entry_date', { ascending: false });
-  if (error) { console.error(error); return; }
-  casinoLogEntries = data || [];
-  renderLogEntries();
+function unsubscribeFromUpdates() {
+  if (!casinosChannel) return;
+  sb.removeChannel(casinosChannel);
+  casinosChannel = null;
 }
-
-function renderLogEntries() {
-  renderSnapshots(casinoLogEntries.filter(e => e.entry_type === 'snapshot'));
-  renderDailyBonuses(casinoLogEntries.filter(e => e.entry_type === 'daily_bonus'));
-  renderRedemptions(casinoLogEntries.filter(e => e.entry_type === 'redemption'));
-  renderPurchases(casinoLogEntries.filter(e => e.entry_type === 'purchase'));
-}
-
-function formatEntryDate(dateStr) {
-  if (!dateStr) return '';
-  const d = new Date(dateStr + 'T00:00:00');
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
-function renderSnapshots(entries) {
-  const list = document.getElementById('snapshots-list');
-  if (!list) return;
-  if (entries.length === 0) {
-    list.innerHTML = '<div class="entries-empty">No scanner snapshots yet</div>';
-    return;
-  }
-  list.innerHTML = `
-    ${entries.map(e => `
-      <div class="entry-item">
-        <div class="entry-main">
-          <span class="entry-amount">$${parseFloat(e.amount || 0).toFixed(2)}</span>
-          <span class="entry-date">${formatEntryDate(e.entry_date)}</span>
-        </div>
-        <button class="entry-delete" data-id="${e.id}">✕</button>
-      </div>
-    `).join('')}
-  `;
-  list.querySelectorAll('.entry-delete').forEach(btn => {
-    btn.addEventListener('click', () => deleteLogEntry(btn.dataset.id));
-  });
-}
-
-function renderDailyBonuses(entries) {
-  const list = document.getElementById('daily-bonuses-list');
-  if (!list) return;
-  if (entries.length === 0) {
-    list.innerHTML = '<div class="entries-empty">No daily bonuses logged</div>';
-    return;
-  }
-  const total = entries.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
-  list.innerHTML = `
-    <div class="entries-total">Total Collected: $${total.toFixed(2)}</div>
-    ${entries.map(e => `
-      <div class="entry-item">
-        <div class="entry-main">
-          <span class="entry-amount" style="color:var(--accent)">$${parseFloat(e.amount || 0).toFixed(2)}</span>
-          <span class="entry-date">${formatEntryDate(e.entry_date)}</span>
-        </div>
-        <button class="entry-delete" data-id="${e.id}">✕</button>
-      </div>
-    `).join('')}
-  `;
-  list.querySelectorAll('.entry-delete').forEach(btn => {
-    btn.addEventListener('click', () => deleteLogEntry(btn.dataset.id));
-  });
-}
-
-function renderRedemptions(entries) {
-  const list = document.getElementById('redemptions-list');
-  if (!list) return;
-  if (entries.length === 0) {
-    list.innerHTML = '<div class="entries-empty">No redemptions logged yet</div>';
-    return;
-  }
-  const total = entries.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
-  list.innerHTML = `
-    <div class="entries-total">Total paid out: $${total.toFixed(2)}</div>
-    ${entries.map(e => `
-      <div class="entry-item">
-        <div class="entry-main">
-          <span class="entry-amount">$${parseFloat(e.amount || 0).toFixed(2)}</span>
-          <span class="entry-date">${formatEntryDate(e.entry_date)}</span>
-        </div>
-        ${e.notes ? `<div class="entry-notes">${e.notes}</div>` : ''}
-        <button class="entry-delete" data-id="${e.id}">✕</button>
-      </div>
-    `).join('')}
-  `;
-  list.querySelectorAll('.entry-delete').forEach(btn => {
-    btn.addEventListener('click', () => deleteLogEntry(btn.dataset.id));
-  });
-}
-
-function renderPurchases(entries) {
-  const list = document.getElementById('purchases-list');
-  if (!list) return;
-  if (entries.length === 0) {
-    list.innerHTML = '<div class="entries-empty">No purchases logged yet</div>';
-    return;
-  }
-  const totalSC    = entries.reduce((sum, e) => sum + (parseFloat(e.amount) || 0), 0);
-  const totalSpent = entries.reduce((sum, e) => sum + (parseFloat(e.money_spent) || 0), 0);
-  list.innerHTML = `
-    <div class="entries-total">${totalSC.toFixed(2)} SC acquired · $${totalSpent.toFixed(2)} spent</div>
-    ${entries.map(e => `
-      <div class="entry-item">
-        <div class="entry-main">
-          <span class="entry-amount">${parseFloat(e.amount || 0).toFixed(2)} SC</span>
-          <span class="entry-cost">$${parseFloat(e.money_spent || 0).toFixed(2)}</span>
-          <span class="entry-date">${formatEntryDate(e.entry_date)}</span>
-        </div>
-        <button class="entry-delete" data-id="${e.id}">✕</button>
-      </div>
-    `).join('')}
-  `;
-  list.querySelectorAll('.entry-delete').forEach(btn => {
-    btn.addEventListener('click', () => deleteLogEntry(btn.dataset.id));
-  });
-}
-
-async function deleteLogEntry(id) {
-  if (!confirm('Delete this entry?')) return;
-  const { error } = await sb.from('casino_log').delete().eq('id', id).eq('user_id', currentUser.id);
-  if (error) { console.error(error); return; }
-  casinoLogEntries = casinoLogEntries.filter(e => e.id !== id);
-  renderLogEntries();
-}
-
-// Tab switching
-document.querySelectorAll('.detail-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.detail-tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    const tabName = tab.dataset.tab;
-    document.getElementById('tab-overview').style.display = tabName === 'overview' ? 'block' : 'none';
-    document.getElementById('tab-records').style.display  = tabName === 'records'  ? 'block' : 'none';
-    if (tabName === 'records' && activeCasino) loadCasinoLog(activeCasino.id);
-  });
-});
-
-// Notes — auto-save 800ms after user stops typing
-document.getElementById('casino-notes').addEventListener('input', () => {
-  clearTimeout(notesDebounceTimer);
-  notesDebounceTimer = setTimeout(async () => {
-    if (!activeCasino) return;
-    const notes = document.getElementById('casino-notes').value;
-    await sb.from('casinos').update({ notes }).eq('id', activeCasino.id).eq('user_id', currentUser.id);
-    const casino = userCasinos.find(c => c.id === activeCasino.id);
-    if (casino) casino.notes = notes;
-    activeCasino.notes = notes;
-  }, 800);
-});
-
-// Add Redemption
-document.getElementById('add-redemption-btn').addEventListener('click', () => {
-  document.getElementById('redemption-date').value   = new Date().toISOString().split('T')[0];
-  document.getElementById('redemption-amount').value = '';
-  document.getElementById('redemption-notes').value  = '';
-  document.getElementById('add-redemption-modal').classList.add('open');
-});
-document.getElementById('close-redemption-modal').addEventListener('click', () => {
-  document.getElementById('add-redemption-modal').classList.remove('open');
-});
-document.getElementById('add-redemption-modal').addEventListener('click', (e) => {
-  if (e.target === e.currentTarget) document.getElementById('add-redemption-modal').classList.remove('open');
-});
-document.getElementById('confirm-add-redemption').addEventListener('click', async () => {
-  if (!activeCasino) return;
-  const date   = document.getElementById('redemption-date').value;
-  const amount = document.getElementById('redemption-amount').value;
-  const notes  = document.getElementById('redemption-notes').value.trim();
-  if (!date || !amount) return;
-  const { data, error } = await sb.from('casino_log').insert({
-    user_id: currentUser.id, casino_id: activeCasino.id,
-    entry_type: 'redemption', amount: parseFloat(amount),
-    notes: notes || null, entry_date: date
-  }).select().single();
-  if (error) { console.error(error); return; }
-  casinoLogEntries.unshift(data);
-  renderLogEntries();
-  document.getElementById('add-redemption-modal').classList.remove('open');
-});
-
-// Add Purchase
-document.getElementById('add-purchase-btn').addEventListener('click', () => {
-  document.getElementById('purchase-date').value  = new Date().toISOString().split('T')[0];
-  document.getElementById('purchase-sc').value    = '';
-  document.getElementById('purchase-money').value = '';
-  document.getElementById('add-purchase-modal').classList.add('open');
-});
-document.getElementById('close-purchase-modal').addEventListener('click', () => {
-  document.getElementById('add-purchase-modal').classList.remove('open');
-});
-document.getElementById('add-purchase-modal').addEventListener('click', (e) => {
-  if (e.target === e.currentTarget) document.getElementById('add-purchase-modal').classList.remove('open');
-});
-document.getElementById('confirm-add-purchase').addEventListener('click', async () => {
-  if (!activeCasino) return;
-  const date  = document.getElementById('purchase-date').value;
-  const sc    = document.getElementById('purchase-sc').value;
-  const money = document.getElementById('purchase-money').value;
-  if (!date || !sc || !money) return;
-  const { data, error } = await sb.from('casino_log').insert({
-    user_id: currentUser.id, casino_id: activeCasino.id,
-    entry_type: 'purchase', amount: parseFloat(sc),
-    money_spent: parseFloat(money), entry_date: date
-  }).select().single();
-  if (error) { console.error(error); return; }
-  casinoLogEntries.unshift(data);
-  renderLogEntries();
-  document.getElementById('add-purchase-modal').classList.remove('open');
-});
 
 // ── Start ─────────────────────────────────────────────────────────────────────
-checkTokenBridge().then((isBridge) => {
-  if (!isBridge) {
-    init().then(() => {
-      if (currentUser) subscribeToUpdates();
-    });
-    sb.auth.onAuthStateChange((_e, session) => {
-      if (session && (!currentUser || currentUser.id !== session.user.id)) {
-        currentUser = session.user;
-        subscribeToUpdates();
-      }
-    });
-  }
-});
+init();

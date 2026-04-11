@@ -15,7 +15,7 @@
     <div class="auth-bg"></div>
     <div class="auth-container">
       <div class="logo">
-        <span class="logo-icon">◈</span>
+        <span class="logo-icon">&#9672;</span>
         <span class="logo-text">SweepVault</span>
       </div>
       <p class="auth-tagline">Your sweepstakes command center</p>
@@ -43,13 +43,12 @@
     <!-- HEADER -->
     <header class="app-header">
       <div class="header-left">
-        <span class="logo-icon small">◈</span>
+        <span class="logo-icon small">&#9672;</span>
         <span class="app-title">SweepVault</span>
       </div>
       <div class="header-right">
-        <button class="icon-btn" id="bookmarklet-btn" title="Get Bookmarklet">⚡</button>
-        <button class="icon-btn" id="add-casino-btn" title="Add Casino">＋</button>
-        <button class="icon-btn" id="signout-btn" title="Sign Out">⏻</button>
+        <button class="icon-btn" id="add-casino-btn" title="Add Casino">+</button>
+        <button class="icon-btn" id="signout-btn" title="Sign Out">&#x23FB;</button>
       </div>
     </header>
 
@@ -71,7 +70,7 @@
     <!-- CASINO GRID -->
     <main class="casino-grid" id="casino-grid">
       <div class="empty-state" id="empty-state">
-        <div class="empty-icon">🎰</div>
+        <div class="empty-icon">&#127920;</div>
         <p>No casinos added yet</p>
         <button class="btn-primary small" id="empty-add-btn">Add Your First Casino</button>
       </div>
@@ -84,7 +83,7 @@
     <div class="modal">
       <div class="modal-header">
         <h2>Add Casino</h2>
-        <button class="modal-close" id="close-add-modal">✕</button>
+        <button class="modal-close" id="close-add-modal">&times;</button>
       </div>
       <div class="modal-body">
         <label>Select Casino</label>
@@ -103,7 +102,7 @@
     <div class="modal">
       <div class="modal-header">
         <h2 id="edit-modal-title">Update Balance</h2>
-        <button class="modal-close" id="close-edit-modal">✕</button>
+        <button class="modal-close" id="close-edit-modal">&times;</button>
       </div>
       <div class="modal-body">
         <label>Current SC Balance</label>
@@ -117,16 +116,16 @@
   <!-- CASINO DETAIL SCREEN -->
   <div id="detail-screen" class="screen">
     <header class="detail-header">
-      <button class="icon-btn" id="detail-back-btn" title="Back">←</button>
+      <button class="icon-btn" id="detail-back-btn" title="Back">&larr;</button>
       <span class="detail-title" id="detail-casino-name">Casino</span>
-      <a class="icon-btn" id="detail-open-site" href="#" target="_blank" rel="noopener noreferrer" title="Open Casino Site">↗</a>
+      <a class="icon-btn" id="detail-open-site" href="#" target="_blank" rel="noopener noreferrer" title="Open Casino Site">&nearr;</a>
     </header>
 
     <div class="detail-hero">
       <div class="detail-hero-name" id="detail-hero-name">Casino</div>
       <div class="detail-hero-domain" id="detail-hero-domain">casino.com</div>
       <a class="btn-open-site" id="detail-open-site-btn" href="#" target="_blank" rel="noopener noreferrer">
-        Open Casino Site ↗
+        Open Casino Site &nearr;
       </a>
     </div>
 
@@ -161,23 +160,23 @@
           <input type="time" id="daily-reset-time" class="daily-time-input" />
           <div class="daily-time-hint">Bonus resets at this time each day (local time)</div>
         </div>
-        <div class="detail-bonus-status ready" id="detail-bonus-status">✓ Ready</div>
+        <div class="detail-bonus-status ready" id="detail-bonus-status">&#10003; Ready</div>
         <div class="detail-reset-time-display" id="detail-reset-time-display" style="display:none"></div>
         <button class="btn-claim" id="detail-claim-btn">Mark as Claimed</button>
       </div>
 
       <div class="detail-sections">
         <div class="detail-section-row" id="detail-charts-row">
-          <span class="detail-section-icon">📊</span>
+          <span class="detail-section-icon">&#128202;</span>
           <span class="detail-section-label">Balance History</span>
           <span class="detail-section-badge coming">Soon</span>
-          <span class="detail-section-arrow">›</span>
+          <span class="detail-section-arrow">&rsaquo;</span>
         </div>
         <div class="detail-section-row" id="detail-bonuses-row">
-          <span class="detail-section-icon">🎁</span>
+          <span class="detail-section-icon">&#127873;</span>
           <span class="detail-section-label">Active Bonuses</span>
           <span class="detail-section-badge" id="detail-bonus-count">0</span>
-          <span class="detail-section-arrow">›</span>
+          <span class="detail-section-arrow">&rsaquo;</span>
         </div>
       </div>
 
@@ -239,7 +238,7 @@
     <div class="modal">
       <div class="modal-header">
         <h2>Add Redemption</h2>
-        <button class="modal-close" id="close-redemption-modal">✕</button>
+        <button class="modal-close" id="close-redemption-modal">&times;</button>
       </div>
       <div class="modal-body">
         <label>Date</label>
@@ -258,7 +257,7 @@
     <div class="modal">
       <div class="modal-header">
         <h2>Add Purchase</h2>
-        <button class="modal-close" id="close-purchase-modal">✕</button>
+        <button class="modal-close" id="close-purchase-modal">&times;</button>
       </div>
       <div class="modal-body">
         <label>Date</label>
@@ -272,30 +271,10 @@
     </div>
   </div>
 
-  <!-- BOOKMARKLET MODAL -->
-  <div class="modal-overlay" id="bookmarklet-modal">
-    <div class="modal">
-      <div class="modal-header">
-        <h2>⚡ Sync Bookmarklet</h2>
-        <button class="modal-close" id="close-bookmarklet-modal">✕</button>
-      </div>
-      <div class="modal-body">
-        <p class="modal-info">Tap the button below to copy the bookmarklet. Then add a new bookmark in your browser and paste this as the URL.</p>
-        <div class="bookmarklet-steps">
-          <div class="step"><span class="step-num">1</span> Copy the bookmarklet code below</div>
-          <div class="step"><span class="step-num">2</span> Create a new bookmark in your browser</div>
-          <div class="step"><span class="step-num">3</span> Name it "Sync Balance" or similar</div>
-          <div class="step"><span class="step-num">4</span> Paste the code as the bookmark URL</div>
-          <div class="step"><span class="step-num">5</span> Visit any supported casino and tap the bookmark</div>
-        </div>
-        <button class="btn-primary" id="copy-bookmarklet-btn">📋 Copy Bookmarklet Code</button>
-        <p id="copy-confirm" class="success-msg" style="display:none">✓ Copied to clipboard!</p>
-      </div>
-    </div>
-  </div>
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/config.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/records.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
