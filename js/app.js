@@ -161,7 +161,7 @@ function renderCasinos() {
     card.dataset.id = casino.id;
     card.tabIndex = 0;
     card.setAttribute('role', 'button');
-    card.setAttribute('aria-label', `Open ${casino.name} in app and browser`);
+    card.setAttribute('aria-label', `Open ${casino.name} details`);
 
     const updated = casino.updated_at
       ? timeAgo(new Date(casino.updated_at))
@@ -211,11 +211,11 @@ function renderCasinos() {
       });
     }
 
-    card.addEventListener('click', () => launchCasinoWorkspace(casino));
+    card.addEventListener('click', () => openDetailPage(casino));
     card.addEventListener('keydown', (event) => {
       if (event.key === 'Enter' || event.key === ' ') {
         event.preventDefault();
-        launchCasinoWorkspace(casino);
+        openDetailPage(casino);
       }
     });
     grid.appendChild(card);
