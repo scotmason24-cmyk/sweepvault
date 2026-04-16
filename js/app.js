@@ -1,3 +1,4 @@
+
 function handleSessionChange(session) {
   if (session) {
     currentUser = session.user;

@@ -171,6 +171,7 @@ document.querySelectorAll('.detail-tab').forEach((tab) => {
 
     const tabName = tab.dataset.tab;
     document.getElementById('tab-overview').style.display = tabName === 'overview' ? 'block' : 'none';
+    document.getElementById('tab-training').style.display = tabName === 'training' ? 'block' : 'none';
     document.getElementById('tab-records').style.display = tabName === 'records' ? 'block' : 'none';
 
     if (tabName === 'records' && activeCasino) {

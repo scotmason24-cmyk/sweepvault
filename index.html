@@ -9,8 +9,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 </head>
 <body>
-
-  <!-- AUTH SCREEN -->
   <div id="auth-screen" class="screen active">
     <div class="auth-bg"></div>
     <div class="auth-container">
@@ -18,7 +16,7 @@
         <span class="logo-icon">&#9672;</span>
         <span class="logo-text">SweepVault</span>
       </div>
-      <p class="auth-tagline">Your sweepstakes command center</p>
+      <p class="auth-tagline">Template-driven balance tracking for sweepstakes play</p>
 
       <div class="tab-switcher">
         <button class="tab-btn active" id="login-tab">Sign In</button>
@@ -37,10 +35,7 @@
     </div>
   </div>
 
-  <!-- MAIN APP -->
   <div id="app-screen" class="screen">
-
-    <!-- HEADER -->
     <header class="app-header">
       <div class="header-left">
         <span class="logo-icon small">&#9672;</span>
@@ -52,51 +47,83 @@
       </div>
     </header>
 
-    <!-- DASHBOARD HERO PANEL -->
     <section class="dashboard-hero-panel">
       <div class="dashboard-hero-copy">
-        <div class="hero-kicker">Vault Overview</div>
-        <h1 class="hero-title">Your sweepstakes dashboard, cleaned up around what matters.</h1>
-        <p class="hero-subtitle">Track balances, see which bonuses are ready, and jump straight into each casino without the page feeling bloated.</p>
+        <div class="hero-kicker">Recognition Command</div>
+        <h1 class="hero-title">Replace OCR with profiles built for the exact balance UI you actually use.</h1>
+        <p class="hero-subtitle">Each casino gets a saved recognition profile with its own region, learned glyph set, and template readiness. This dashboard is now centered around training coverage instead of generic scraping.</p>
       </div>
 
       <div class="dashboard-hero-grid">
         <div class="dashboard-card primary-balance-card">
           <div class="card-glow"></div>
-          <div class="total-label">Total Vault Balance</div>
+          <div class="total-label">Tracked SC Total</div>
           <div class="total-amount-wrapper">
             <span class="currency-symbol">SC</span>
             <span class="total-amount" id="total-balance">0.00</span>
           </div>
           <div class="total-sub" id="casino-count">0 casinos tracked</div>
-          <div class="hero-balance-foot">
-            <span id="hero-last-updated">No recent updates yet</span>
-          </div>
+          <div class="hero-balance-foot" id="hero-last-updated">No recent updates yet</div>
         </div>
 
         <div class="hero-stat-stack">
           <div class="dashboard-card hero-stat-card">
-            <div class="hero-stat-label">Ready Bonuses</div>
+            <div class="hero-stat-label">Profiles Ready</div>
             <div class="hero-stat-value" id="ready-count">0</div>
-            <div class="hero-stat-sub">casinos ready to claim</div>
+            <div class="hero-stat-sub">template profiles with full glyph coverage</div>
           </div>
 
           <div class="dashboard-card hero-stat-card">
-            <div class="hero-stat-label">Fresh Updates</div>
-            <div class="hero-stat-value" id="fresh-count">0</div>
-            <div class="hero-stat-sub">updated in the last 24 hours</div>
+            <div class="hero-stat-label">Calibration In Progress</div>
+            <div class="hero-stat-value" id="calibration-count">0</div>
+            <div class="hero-stat-sub">profiles still learning missing glyphs</div>
           </div>
 
           <div class="dashboard-card hero-stat-card">
-            <div class="hero-stat-label">Average Balance</div>
-            <div class="hero-stat-value" id="average-balance">0.00</div>
-            <div class="hero-stat-sub">SC per tracked casino</div>
+            <div class="hero-stat-label">Region Locked</div>
+            <div class="hero-stat-value" id="region-count">0</div>
+            <div class="hero-stat-sub">casino profiles with a saved capture region</div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- CASINO GRID -->
+    <section class="pipeline-panel">
+      <div class="pipeline-card">
+        <div class="pipeline-label">Template Flow</div>
+        <div class="pipeline-steps">
+          <div class="pipeline-step">
+            <span class="pipeline-dot">1</span>
+            <div>
+              <strong>Save Region</strong>
+              <p>Lock the SC display area once per casino.</p>
+            </div>
+          </div>
+          <div class="pipeline-step">
+            <span class="pipeline-dot">2</span>
+            <div>
+              <strong>Confirm Reads</strong>
+              <p>Use real balances to label the glyphs the engine sees.</p>
+            </div>
+          </div>
+          <div class="pipeline-step">
+            <span class="pipeline-dot">3</span>
+            <div>
+              <strong>Fill Missing Digits</strong>
+              <p>Track the exact digits and symbols still missing from each profile.</p>
+            </div>
+          </div>
+          <div class="pipeline-step">
+            <span class="pipeline-dot">4</span>
+            <div>
+              <strong>Run Template Only</strong>
+              <p>Once coverage is complete, use the trained profile as the reader.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <main class="casino-grid" id="casino-grid">
       <div class="empty-state" id="empty-state">
         <div class="empty-icon">&#127920;</div>
@@ -104,10 +131,8 @@
         <button class="btn-primary small" id="empty-add-btn">Add Your First Casino</button>
       </div>
     </main>
-
   </div>
 
-  <!-- ADD CASINO MODAL -->
   <div class="modal-overlay" id="add-modal">
     <div class="modal">
       <div class="modal-header">
@@ -126,7 +151,6 @@
     </div>
   </div>
 
-  <!-- EDIT BALANCE MODAL -->
   <div class="modal-overlay" id="edit-modal">
     <div class="modal">
       <div class="modal-header">
@@ -142,7 +166,6 @@
     </div>
   </div>
 
-  <!-- CASINO DETAIL SCREEN -->
   <div id="detail-screen" class="screen">
     <header class="detail-header">
       <button class="icon-btn" id="detail-back-btn" title="Back">&larr;</button>
@@ -162,9 +185,7 @@
 
         <div class="detail-hero-actions">
           <button class="btn-open-overlay" id="detail-open-overlay-btn">Open Overlay</button>
-          <a class="btn-open-site" id="detail-open-site-btn" href="#" target="_blank" rel="noopener noreferrer">
-            Visit Site &nearr;
-          </a>
+          <a class="btn-open-site" id="detail-open-site-btn" href="#" target="_blank" rel="noopener noreferrer">Visit Site &nearr;</a>
         </div>
 
         <div class="detail-mini-stats">
@@ -173,8 +194,8 @@
             <strong id="detail-hero-balance">0.00</strong>
           </div>
           <div class="detail-mini-stat">
-            <span>Bonus Status</span>
-            <strong id="detail-hero-bonus-status">Ready</strong>
+            <span>Recognition Mode</span>
+            <strong id="detail-hero-mode">Template</strong>
           </div>
           <div class="detail-mini-stat">
             <span>Last Update</span>
@@ -184,13 +205,12 @@
       </div>
     </div>
 
-    <!-- TABS -->
     <div class="detail-tabs">
       <button class="detail-tab active" data-tab="overview">Overview</button>
+      <button class="detail-tab" data-tab="training">Training</button>
       <button class="detail-tab" data-tab="records">My Records</button>
     </div>
 
-    <!-- OVERVIEW TAB -->
     <div id="tab-overview">
       <div class="detail-overview-grid">
         <div class="detail-balance-card">
@@ -202,7 +222,6 @@
           </div>
         </div>
 
-        <!-- BONUS TIMER CARD -->
         <div class="detail-bonus-card">
           <div class="detail-bonus-top">
             <div class="detail-bonus-label">Daily Bonus</div>
@@ -223,17 +242,20 @@
       </div>
 
       <div class="detail-sections">
-        <div class="detail-section-row" id="detail-charts-row">
-          <span class="detail-section-icon">&#128202;</span>
-          <span class="detail-section-label">Balance History</span>
-          <span class="detail-section-badge coming">Soon</span>
-          <span class="detail-section-arrow">&rsaquo;</span>
+        <div class="detail-section-row">
+          <span class="detail-section-icon">&#128247;</span>
+          <span class="detail-section-label">Capture Region</span>
+          <span class="detail-section-badge" id="detail-region-badge">Unconfigured</span>
         </div>
-        <div class="detail-section-row" id="detail-bonuses-row">
-          <span class="detail-section-icon">&#127873;</span>
-          <span class="detail-section-label">Active Bonuses</span>
-          <span class="detail-section-badge" id="detail-bonus-count">0</span>
-          <span class="detail-section-arrow">&rsaquo;</span>
+        <div class="detail-section-row">
+          <span class="detail-section-icon">&#128290;</span>
+          <span class="detail-section-label">Glyph Coverage</span>
+          <span class="detail-section-badge" id="detail-coverage-badge">0 / 11</span>
+        </div>
+        <div class="detail-section-row">
+          <span class="detail-section-icon">&#129504;</span>
+          <span class="detail-section-label">Recognizer Status</span>
+          <span class="detail-section-badge" id="detail-profile-status-badge">Needs setup</span>
         </div>
       </div>
 
@@ -242,10 +264,148 @@
       </div>
     </div>
 
-    <!-- MY RECORDS TAB -->
-    <div id="tab-records" style="display:none">
+    <div id="tab-training" style="display:none">
+      <div class="training-grid">
+        <section class="training-card">
+          <div class="training-card-head">
+            <div>
+              <div class="training-label">Profile Basics</div>
+              <h3>Recognition profile</h3>
+            </div>
+            <span class="training-status-pill" id="training-status-pill">Needs setup</span>
+          </div>
 
-      <!-- Notes -->
+          <label>Profile Name</label>
+          <input type="text" id="profile-name-input" placeholder="Bountiful Birds" />
+
+          <label>Shared Font Group</label>
+          <input type="text" id="profile-font-group-input" placeholder="Pragmatic Play green balance UI" />
+
+          <label>Recognition Mode</label>
+          <select id="profile-mode-select">
+            <option value="template">Template only</option>
+            <option value="manual">Manual entry while training</option>
+          </select>
+
+          <button class="btn-primary" id="save-profile-btn">Save Profile Settings</button>
+        </section>
+
+        <section class="training-card">
+          <div class="training-card-head">
+            <div>
+              <div class="training-label">Region Setup</div>
+              <h3>Capture lock</h3>
+            </div>
+          </div>
+          <p class="training-copy">This repo does not contain the capture engine, but the profile state is ready for it. Mark the balance region as locked once you have saved the rectangle in the scanner app.</p>
+          <label>Region Label</label>
+          <input type="text" id="region-label-input" placeholder="Top header SC balance" />
+          <div class="training-actions">
+            <button class="btn-secondary" id="toggle-region-btn">Mark Region Ready</button>
+            <button class="btn-secondary ghost" id="reset-profile-btn">Reset Training</button>
+          </div>
+        </section>
+
+        <section class="training-card training-card-wide">
+          <div class="training-card-head">
+            <div>
+              <div class="training-label">Readiness Checklist</div>
+              <h3>What still needs to happen</h3>
+            </div>
+          </div>
+          <div class="checklist-list" id="training-checklist"></div>
+        </section>
+
+        <section class="training-card training-card-wide">
+          <div class="training-card-head">
+            <div>
+              <div class="training-label">Glyph Coverage</div>
+              <h3>Training progress</h3>
+            </div>
+            <span class="coverage-value" id="coverage-value">0 / 11 learned</span>
+          </div>
+
+          <div class="coverage-bar">
+            <div class="coverage-bar-fill" id="coverage-bar-fill"></div>
+          </div>
+
+          <label>Learned Characters</label>
+          <input type="text" id="learned-glyphs-input" placeholder="0123456789." />
+          <div class="training-hint">Use digits plus the decimal point. The app will dedupe and sort them automatically.</div>
+
+          <div class="glyph-panels">
+            <div class="glyph-panel">
+              <div class="glyph-panel-title">Learned</div>
+              <div class="glyph-chip-list" id="learned-glyphs-list"></div>
+            </div>
+            <div class="glyph-panel">
+              <div class="glyph-panel-title">Still Missing</div>
+              <div class="glyph-chip-list" id="missing-glyphs-list"></div>
+            </div>
+          </div>
+
+          <div class="training-actions">
+            <button class="btn-primary" id="save-glyphs-btn">Save Glyph Coverage</button>
+            <button class="btn-secondary" id="mark-complete-btn">Mark Fully Trained</button>
+          </div>
+        </section>
+
+        <section class="training-card training-card-wide">
+          <div class="training-card-head">
+            <div>
+              <div class="training-label">Corrections</div>
+              <h3>Retrain from confirmed reads</h3>
+            </div>
+          </div>
+
+          <label>Last confirmed balance</label>
+          <input type="text" id="confirmed-balance-input" placeholder="7.08" />
+
+          <label>Correction note</label>
+          <input type="text" id="profile-note-input" placeholder="Struggled with 8 when glow was strong" />
+
+          <div class="training-actions">
+            <button class="btn-primary" id="save-correction-btn">Log Correction</button>
+          </div>
+          <div class="training-hint" id="profile-note-status">Corrections and profile notes are saved locally in this browser for now.</div>
+        </section>
+
+        <section class="training-card training-card-wide">
+          <div class="training-card-head">
+            <div>
+              <div class="training-label">Glyph Strength</div>
+              <h3>Per-character sample counts</h3>
+            </div>
+            <span class="coverage-value" id="sample-strength-value">0 samples logged</span>
+          </div>
+          <div class="sample-grid" id="sample-grid"></div>
+        </section>
+
+        <section class="training-card training-card-wide">
+          <div class="training-card-head">
+            <div>
+              <div class="training-label">Correction History</div>
+              <h3>Recent confirmed reads</h3>
+            </div>
+          </div>
+          <div class="history-list" id="training-history-list"></div>
+        </section>
+
+        <section class="training-card training-card-wide">
+          <div class="training-card-head">
+            <div>
+              <div class="training-label">Scanner Bridge</div>
+              <h3>Integration payload</h3>
+            </div>
+            <button class="btn-secondary" id="copy-payload-btn">Copy Payload</button>
+          </div>
+          <div class="training-hint">This is the data contract the capture/template matcher can send and receive for this casino profile.</div>
+          <pre class="payload-preview" id="payload-preview"></pre>
+        </section>
+      </div>
+    </div>
+
+    <div id="tab-records" style="display:none">
       <div class="records-section">
         <div class="records-section-header">
           <span class="records-section-title">Notes</span>
@@ -253,7 +413,6 @@
         <textarea id="casino-notes" class="casino-notes-input" placeholder="Anything you want to remember about this casino..."></textarea>
       </div>
 
-      <!-- Snapshots -->
       <div class="records-section">
         <div class="records-section-header">
           <span class="records-section-title">Scanner Snapshots</span>
@@ -261,15 +420,14 @@
         <div id="snapshots-list" class="entries-list"></div>
       </div>
 
-      <!-- Daily Bonuses -->
       <div class="records-section">
         <div class="records-section-header">
           <span class="records-section-title">Daily Bonuses</span>
+          <span class="detail-section-badge" id="detail-bonus-count">0</span>
         </div>
         <div id="daily-bonuses-list" class="entries-list"></div>
       </div>
 
-      <!-- Redemptions -->
       <div class="records-section">
         <div class="records-section-header">
           <span class="records-section-title">Redemptions</span>
@@ -278,7 +436,6 @@
         <div id="redemptions-list" class="entries-list"></div>
       </div>
 
-      <!-- Purchases -->
       <div class="records-section">
         <div class="records-section-header">
           <span class="records-section-title">Purchases</span>
@@ -286,11 +443,9 @@
         </div>
         <div id="purchases-list" class="entries-list"></div>
       </div>
-
     </div>
   </div>
 
-  <!-- ADD REDEMPTION MODAL -->
   <div class="modal-overlay" id="add-redemption-modal">
     <div class="modal">
       <div class="modal-header">
@@ -309,7 +464,6 @@
     </div>
   </div>
 
-  <!-- ADD PURCHASE MODAL -->
   <div class="modal-overlay" id="add-purchase-modal">
     <div class="modal">
       <div class="modal-header">
