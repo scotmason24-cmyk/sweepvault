@@ -41,7 +41,7 @@ const SITE_CONFIG = {
   "sweetsweeps.com":       { name: "SweetSweeps",      selector: ".MuiBox-root:has(img[src*='sc-icon.png']) > span.MuiTypography-root" },
   "lunalandcasino.com":    { name: "LunaLand",         selector: "span#balance-sc-coin" },
   "myprize.us":            { name: "MyPrize",          selector: ".active-currency-section .amount" },
-  "ace.com":               { name: "Ace",              selector: "[data-test='sc-balance'] span[class*='currencyValue']" },
+  "ace.com":               { name: "Ace",              selector: "[data-test='sc-balance'] span[class*='currencyValue']", launch_url: "https://www.ace.com/gold-coins" },
   "goldmachine.com":       { name: "Gold Machine",     selector: "button:has(span[class*='tabular-nums'])" },
   "spindoo.us":            { name: "Spindoo",          selector: "div[data-test='sc-balance'] span" },
   "jackpota.com":          { name: "Jackpota",         selector: "div:has(img[alt='SC icon']):has(button[aria-label='Info']) span" },

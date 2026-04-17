@@ -660,7 +660,8 @@ function triggerCasinoOverlay(casinoId) {
 
 function launchCasinoWorkspace(casino) {
   triggerCasinoOverlay(casino.id);
-  window.open(`https://${casino.domain}`, '_blank', 'noopener,noreferrer');
+  const customUrl = typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG[casino.domain]?.launch_url;
+  window.open(customUrl || `https://${casino.domain}`, '_blank', 'noopener,noreferrer');
 }
 
 function timeAgo(date) {
@@ -782,7 +783,8 @@ function syncDetailView(casino) {
   const coverage = getProfileCoverage(profile);
   const status = getProfileStatus(profile);
   const updatedText = casino.updated_at ? `Updated ${timeAgo(new Date(casino.updated_at))}` : 'never updated';
-  const siteUrl = `https://${casino.domain}`;
+  const customUrl = typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG[casino.domain]?.launch_url;
+  const siteUrl = customUrl || `https://${casino.domain}`;
 
   document.getElementById('detail-casino-name').textContent = casino.name;
   document.getElementById('detail-open-site').href = siteUrl;
