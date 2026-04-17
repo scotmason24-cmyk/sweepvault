@@ -42,87 +42,20 @@
         <span class="app-title">SweepVault</span>
       </div>
       <div class="header-right">
+        <div class="header-balance-wrap">
+          <span class="header-balance-label">SC Tracked Total:</span>
+          <span class="header-balance-amount" id="total-balance">0.00</span>
+          <!-- Preserved tracking ids so JS won't break -->
+          <span id="casino-count" style="display:none">0 casinos tracked</span>
+          <span id="ready-count" style="display:none">0</span>
+          <span id="calibration-count" style="display:none">0</span>
+          <span id="region-count" style="display:none">0</span>
+          <span id="hero-last-updated" style="display:none"></span>
+        </div>
         <button class="icon-btn" id="add-casino-btn" title="Add Casino">+</button>
         <button class="icon-btn" id="signout-btn" title="Sign Out">&#x23FB;</button>
       </div>
     </header>
-
-    <section class="dashboard-hero-panel">
-      <div class="dashboard-hero-copy">
-        <div class="hero-kicker">Recognition Command</div>
-        <h1 class="hero-title">Replace OCR with profiles built for the exact balance UI you actually use.</h1>
-        <p class="hero-subtitle">Each casino gets a saved recognition profile with its own region, learned glyph set, and template readiness. This dashboard is now centered around training coverage instead of generic scraping.</p>
-      </div>
-
-      <div class="dashboard-hero-grid">
-        <div class="dashboard-card primary-balance-card">
-          <div class="card-glow"></div>
-          <div class="total-label">Tracked SC Total</div>
-          <div class="total-amount-wrapper">
-            <span class="currency-symbol">SC</span>
-            <span class="total-amount" id="total-balance">0.00</span>
-          </div>
-          <div class="total-sub" id="casino-count">0 casinos tracked</div>
-          <div class="hero-balance-foot" id="hero-last-updated">No recent updates yet</div>
-        </div>
-
-        <div class="hero-stat-stack">
-          <div class="dashboard-card hero-stat-card">
-            <div class="hero-stat-label">Profiles Ready</div>
-            <div class="hero-stat-value" id="ready-count">0</div>
-            <div class="hero-stat-sub">template profiles with full glyph coverage</div>
-          </div>
-
-          <div class="dashboard-card hero-stat-card">
-            <div class="hero-stat-label">Calibration In Progress</div>
-            <div class="hero-stat-value" id="calibration-count">0</div>
-            <div class="hero-stat-sub">profiles still learning missing glyphs</div>
-          </div>
-
-          <div class="dashboard-card hero-stat-card">
-            <div class="hero-stat-label">Region Locked</div>
-            <div class="hero-stat-value" id="region-count">0</div>
-            <div class="hero-stat-sub">casino profiles with a saved capture region</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="pipeline-panel">
-      <div class="pipeline-card">
-        <div class="pipeline-label">Template Flow</div>
-        <div class="pipeline-steps">
-          <div class="pipeline-step">
-            <span class="pipeline-dot">1</span>
-            <div>
-              <strong>Save Region</strong>
-              <p>Lock the SC display area once per casino.</p>
-            </div>
-          </div>
-          <div class="pipeline-step">
-            <span class="pipeline-dot">2</span>
-            <div>
-              <strong>Confirm Reads</strong>
-              <p>Use real balances to label the glyphs the engine sees.</p>
-            </div>
-          </div>
-          <div class="pipeline-step">
-            <span class="pipeline-dot">3</span>
-            <div>
-              <strong>Fill Missing Digits</strong>
-              <p>Track the exact digits and symbols still missing from each profile.</p>
-            </div>
-          </div>
-          <div class="pipeline-step">
-            <span class="pipeline-dot">4</span>
-            <div>
-              <strong>Run Template Only</strong>
-              <p>Once coverage is complete, use the trained profile as the reader.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
 
     <main class="casino-grid" id="casino-grid">
       <div class="empty-state" id="empty-state">

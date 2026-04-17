@@ -1,17 +1,17 @@
 :root {
-  --bg: #08141a;
-  --bg-elevated: rgba(11, 24, 31, 0.88);
-  --bg-soft: rgba(19, 39, 47, 0.72);
-  --panel: rgba(18, 34, 40, 0.92);
-  --border: rgba(126, 173, 166, 0.2);
-  --border-strong: rgba(155, 225, 196, 0.38);
-  --text: #f3f8f6;
-  --muted: #9ab4b0;
-  --muted-strong: #c4d9d5;
-  --accent: #8ef2c2;
-  --accent-strong: #d6ff72;
-  --amber: #ffc96b;
-  --danger: #ff877d;
+  --bg: #08080c;
+  --bg-elevated: rgba(13, 13, 20, 0.88);
+  --bg-soft: rgba(22, 22, 34, 0.72);
+  --panel: rgba(17, 17, 26, 0.92);
+  --border: rgba(124, 92, 252, 0.15);
+  --border-strong: rgba(124, 92, 252, 0.38);
+  --text: #f8fafc;
+  --muted: #8c8c9f;
+  --muted-strong: #a4a4b8;
+  --accent: #7c5cfc;
+  --accent-strong: #9b7bff;
+  --amber: #f59e0b;
+  --danger: #ef4444;
   --radius: 22px;
   --radius-sm: 14px;
   --shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
@@ -27,9 +27,9 @@ html,
 body {
   min-height: 100%;
   background:
-    radial-gradient(circle at top left, rgba(142, 242, 194, 0.12), transparent 28%),
-    radial-gradient(circle at top right, rgba(214, 255, 114, 0.08), transparent 26%),
-    linear-gradient(180deg, #071015 0%, #091a20 54%, #0d1f25 100%);
+    radial-gradient(circle at top left, rgba(124, 92, 252, 0.06), transparent 35%),
+    radial-gradient(circle at top right, rgba(155, 123, 255, 0.04), transparent 30%),
+    linear-gradient(180deg, var(--bg) 0%, #050508 100%);
   color: var(--text);
   font-family: 'DM Mono', monospace;
   font-size: 14px;
@@ -270,7 +270,36 @@ textarea:focus {
 
 .header-right {
   display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-balance-wrap {
+  display: flex;
+  align-items: baseline;
   gap: 8px;
+  background: rgba(124, 92, 252, 0.08);
+  border: 1px solid rgba(124, 92, 252, 0.2);
+  padding: 6px 14px;
+  border-radius: 999px;
+  box-shadow: 0 0 12px rgba(124, 92, 252, 0.05);
+  margin-right: 12px;
+}
+
+.header-balance-label {
+  font-size: 11px;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+
+.header-balance-amount {
+  font-family: 'DM Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  font-size: 16px;
+  color: #fff;
 }
 
 .icon-btn,
@@ -286,218 +315,29 @@ textarea:focus {
   color: var(--text);
 }
 
-.dashboard-hero-panel,
-.pipeline-panel,
-.casino-grid,
-.detail-hero-shell,
-.detail-overview-grid,
-.detail-sections,
-.detail-danger-zone,
-#tab-records,
-.training-grid {
-  width: min(1180px, calc(100% - 32px));
-  margin-inline: auto;
-}
-
-.dashboard-hero-panel {
-  display: grid;
-  gap: 20px;
-  padding: 28px 0 20px;
-}
-
-.dashboard-hero-copy {
-  display: grid;
-  gap: 10px;
-  max-width: 760px;
-}
-
-.hero-kicker,
-.pipeline-label,
-.training-label,
-.detail-balance-label,
-.detail-bonus-label,
-.detail-mini-stat span,
-.modal-body label {
-  color: var(--accent);
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  font-size: 11px;
-}
-
-.hero-title {
-  max-width: 13ch;
-  font-size: clamp(34px, 5vw, 60px);
-  line-height: 0.94;
-  letter-spacing: -0.05em;
-}
-
-.dashboard-hero-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.95fr);
-  gap: 18px;
-}
-
-.dashboard-card,
-.pipeline-card,
-.casino-card,
-.detail-balance-card,
-.detail-bonus-card,
-.detail-sections,
-.records-section,
-.training-card,
-.modal {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015)), var(--panel);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-}
-
-.primary-balance-card {
-  position: relative;
-  overflow: hidden;
-  min-height: 280px;
-  padding: 28px;
-}
-
-.card-glow {
-  position: absolute;
-  inset: -20% auto auto -15%;
-  width: 70%;
-  height: 70%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(142, 242, 194, 0.2), transparent 72%);
-  pointer-events: none;
-}
-
-.total-label {
-  color: var(--muted);
-  font-size: 12px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.total-amount-wrapper {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  margin: 18px 0 10px;
-}
-
-.currency-symbol,
-.total-amount,
-.casino-balance,
-.detail-balance-amount,
-.detail-bonus-status,
-.entry-amount {
-  font-variant-numeric: tabular-nums;
-}
-
-.currency-symbol {
-  color: var(--accent-strong);
-  font-size: 28px;
-  font-weight: 800;
-}
-
-.total-amount {
-  font-size: clamp(54px, 8vw, 82px);
-  color: var(--accent-strong);
-  line-height: 1;
-}
-
-.total-sub,
-.hero-balance-foot,
-.hero-stat-sub {
-  color: var(--muted);
-}
-
-.hero-balance-foot {
-  margin-top: auto;
-  padding-top: 18px;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-}
-
-.hero-stat-stack {
-  display: grid;
-  gap: 18px;
-}
-
-.hero-stat-card {
-  padding: 22px;
-}
-
-.hero-stat-label {
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.14em;
-  font-size: 11px;
-}
-
-.hero-stat-value {
-  margin: 12px 0 8px;
-  font-family: 'Syne', sans-serif;
-  font-size: 38px;
-  line-height: 1;
-}
-
-.pipeline-panel {
-  padding-bottom: 12px;
-}
-
-.pipeline-card {
-  padding: 22px;
-}
-
-.pipeline-steps {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 14px;
-  margin-top: 16px;
-}
-
-.pipeline-step {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  padding: 14px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.pipeline-step strong {
-  display: block;
-  margin-bottom: 6px;
-}
-
-.pipeline-dot {
-  min-width: 28px;
-  height: 28px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: rgba(142, 242, 194, 0.14);
-  color: var(--accent-strong);
-  font-family: 'Syne', sans-serif;
-  font-weight: 700;
-}
-
 .casino-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 18px;
-  padding: 12px 0 46px;
+  padding: 32px 0 46px;
 }
 
 .casino-card {
   padding: 18px;
   display: grid;
   gap: 14px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.casino-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(124, 92, 252, 0.4);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), 0 0 12px rgba(124, 92, 252, 0.1);
 }
 
 .casino-card.status-ready {
-  border-color: rgba(142, 242, 194, 0.35);
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(142, 242, 194, 0.05);
+  border-color: rgba(124, 92, 252, 0.35);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.28), 0 0 0 1px rgba(124, 92, 252, 0.05);
 }
 
 .casino-card.status-progress {
