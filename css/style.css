@@ -1,20 +1,20 @@
 :root {
-  --bg: #08080c;
-  --bg-elevated: rgba(13, 13, 20, 0.88);
-  --bg-soft: rgba(22, 22, 34, 0.72);
-  --panel: rgba(17, 17, 26, 0.92);
-  --border: rgba(124, 92, 252, 0.15);
-  --border-strong: rgba(124, 92, 252, 0.38);
+  --bg: #0a0412; /* Deep violet black */
+  --bg-elevated: rgba(20, 10, 40, 0.88);
+  --bg-soft: rgba(30, 15, 60, 0.72);
+  --panel: #150d26; /* Distinct midnight purple panel */
+  --border: rgba(140, 100, 255, 0.45); /* Very distinct purple border */
+  --border-strong: rgba(160, 120, 255, 0.7);
   --text: #f8fafc;
-  --muted: #8c8c9f;
-  --muted-strong: #a4a4b8;
-  --accent: #7c5cfc;
-  --accent-strong: #9b7bff;
+  --muted: #a894cc; /* Purplish muted text */
+  --muted-strong: #c4ace8;
+  --accent: #9b7bff;
+  --accent-strong: #cda2ff;
   --amber: #f59e0b;
-  --danger: #ef4444;
+  --danger: #ef4444; /* Standard red */
   --radius: 22px;
   --radius-sm: 14px;
-  --shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+  --shadow: 0 16px 40px rgba(10, 0, 25, 0.5), 0 0 14px rgba(140, 100, 255, 0.15); /* Purple shadow wash */
 }
 
 * {
@@ -326,13 +326,14 @@ textarea:focus {
   padding: 18px;
   display: grid;
   gap: 14px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
 }
 
 .casino-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(124, 92, 252, 0.4);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), 0 0 12px rgba(124, 92, 252, 0.1);
+  transform: translateY(-3px);
+  border-color: rgba(124, 92, 252, 0.7);
+  background: linear-gradient(180deg, rgba(124, 92, 252, 0.08), rgba(255, 255, 255, 0.015)), var(--panel);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(124, 92, 252, 0.25);
 }
 
 .casino-card.status-ready {
