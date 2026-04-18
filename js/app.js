@@ -1,6 +1,7 @@
 const PROFILE_STORAGE_KEY = 'sweepvault-template-profiles';
 const REQUIRED_GLYPHS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'];
 let profileStore = {};
+let claimCasinoId = null;
 
 function createEmptyGlyphStats() {
   return REQUIRED_GLYPHS.reduce((acc, glyph) => {
@@ -443,47 +444,80 @@ async function removeCasino(id) {
 }
 
 function renderCasinos() {
-  const grid = document.getElementById('casino-grid');
+  const onDeckGrid = document.getElementById('on-deck-grid');
+  const readySoonGrid = document.getElementById('ready-soon-grid');
+  const setupNeededGrid = document.getElementById('setup-needed-grid');
   const empty = document.getElementById('empty-state');
   const totalEl = document.getElementById('total-balance');
+  const dashboardTotalEl = document.getElementById('dashboard-total-balance');
   const countEl = document.getElementById('casino-count');
   const readyCountEl = document.getElementById('ready-count');
   const calibrationCountEl = document.getElementById('calibration-count');
   const regionCountEl = document.getElementById('region-count');
   const heroLastUpdatedEl = document.getElementById('hero-last-updated');
+  const dashboardReadyEl = document.getElementById('dashboard-ready-count');
+  const dashboardCasinoCountEl = document.getElementById('dashboard-casino-count');
+  const dashboardLastUpdatedEl = document.getElementById('dashboard-last-updated');
+  const dashboardNextClaimNameEl = document.getElementById('dashboard-next-claim-name');
+  const dashboardNextClaimTimeEl = document.getElementById('dashboard-next-claim-time');
+  const dashboardOnDeckCountEl = document.getElementById('dashboard-on-deck-count');
+  const dashboardReadySoonCountEl = document.getElementById('dashboard-ready-soon-count');
+  const dashboardSetupCountEl = document.getElementById('dashboard-setup-count');
 
-  Array.from(grid.querySelectorAll('.casino-card')).forEach((card) => card.remove());
+  onDeckGrid.innerHTML = '';
+  readySoonGrid.innerHTML = '';
+  setupNeededGrid.innerHTML = '';
 
   if (userCasinos.length === 0) {
-    empty.style.display = 'flex';
+    empty.style.display = 'grid';
     totalEl.textContent = '0.00';
+    dashboardTotalEl.textContent = '0.00 SC';
     countEl.textContent = '0 casinos tracked';
     readyCountEl.textContent = '0';
     calibrationCountEl.textContent = '0';
     regionCountEl.textContent = '0';
     heroLastUpdatedEl.textContent = 'No recent updates yet';
+    dashboardReadyEl.textContent = '0 Sites Ready';
+    dashboardCasinoCountEl.textContent = '0 casinos tracked';
+    dashboardLastUpdatedEl.textContent = 'No recent updates yet';
+    dashboardNextClaimNameEl.textContent = 'No pending claims';
+    dashboardNextClaimTimeEl.textContent = 'Add sites to start tracking';
+    dashboardOnDeckCountEl.textContent = '0 ready now';
+    dashboardReadySoonCountEl.textContent = '0 cooling down';
+    dashboardSetupCountEl.textContent = '0 need setup';
     return;
   }
 
   empty.style.display = 'none';
 
   const sorted = [...userCasinos].sort((a, b) => a.name.localeCompare(b.name));
+  const groups = {
+    ready: [],
+    soon: [],
+    setup: []
+  };
 
   let total = 0;
   let readyCount = 0;
   let calibrationCount = 0;
   let regionCount = 0;
   let latestUpdatedAt = null;
+  let nextClaimCasino = null;
+  let nextClaimMs = Infinity;
 
   sorted.forEach((casino) => {
     const profile = getProfile(casino);
-    const coverage = getProfileCoverage(profile);
-    const status = getProfileStatus(profile);
+    const timer = getTimerInfo(casino);
     const updated = casino.updated_at ? timeAgo(new Date(casino.updated_at)) : 'never';
+    const cardState = !profile.region.ready
+      ? 'setup'
+      : timer.ready
+        ? 'ready'
+        : 'soon';
 
     total += parseFloat(casino.balance) || 0;
-    if (status.label === 'Ready') readyCount += 1;
-    else if (status.label === 'Training') calibrationCount += 1;
+    if (cardState === 'ready') readyCount += 1;
+    else if (cardState === 'soon') calibrationCount += 1;
     if (profile.region.ready) regionCount += 1;
 
     if (casino.updated_at) {
@@ -493,12 +527,38 @@ function renderCasinos() {
       }
     }
 
+    if (!timer.ready && profile.region.ready) {
+      const remainingMs = getRemainingClaimMs(casino);
+      if (remainingMs < nextClaimMs) {
+        nextClaimMs = remainingMs;
+        nextClaimCasino = casino;
+      }
+    }
+
     const card = document.createElement('div');
-    card.className = `casino-card status-${status.tone}`;
+    card.className = `casino-card status-${cardState === 'ready' ? 'ready' : cardState === 'soon' ? 'cooling' : 'setup'}`;
     card.dataset.id = casino.id;
     card.tabIndex = 0;
     card.setAttribute('role', 'button');
     card.setAttribute('aria-label', `Open ${casino.name} details`);
+
+    const launchLabel = cardState === 'ready' ? 'Go' : 'Go';
+    const timerDisplay = cardState === 'ready'
+      ? 'Ready to collect'
+      : cardState === 'soon'
+        ? `In ${timer.text}`
+        : 'Needs scanner setup';
+    const secondaryStatLabel = cardState === 'setup'
+      ? 'Scanner'
+      : 'Next Window';
+    const secondaryStatValue = cardState === 'setup'
+      ? (profile.region.ready ? 'Linked' : 'Unconfigured')
+      : (timer.resetTime || 'Rolling window');
+    const actionLabel = cardState === 'ready'
+      ? 'Log Bonus'
+      : cardState === 'setup'
+        ? 'Open Details'
+        : 'View Timer';
 
     card.innerHTML = `
       <div class="casino-card-top">
@@ -510,26 +570,31 @@ function renderCasinos() {
           </div>
         </div>
         <button
-          class="casino-launch-link"
+          class="casino-launch-link${cardState === 'ready' ? ' ready' : ''}"
           type="button"
           aria-label="Open ${casino.name} in app and browser"
           title="Open ${casino.name} in app and browser"
-        >Go</button>
+        >${launchLabel}</button>
       </div>
-      <div class="casino-balance">${formatBalance(casino.balance)}</div>
-      <div class="casino-profile-row">
-        <span class="profile-badge tone-${status.tone}">${status.label}</span>
-        <span class="profile-meta">${coverage.learned.length} / ${REQUIRED_GLYPHS.length} glyphs</span>
+      <div class="casino-status-line">
+        <span class="profile-badge tone-${cardState === 'ready' ? 'ready' : cardState === 'soon' ? 'progress' : 'muted'}">
+          ${cardState === 'ready' ? 'Ready Now' : cardState === 'soon' ? 'Ready Soon' : 'Setup Needed'}
+        </span>
+        <span class="profile-meta">${timerDisplay}</span>
       </div>
+      <div class="casino-balance">${formatBalance(casino.balance)} SC</div>
       <div class="casino-meta-grid">
         <div class="casino-meta-item">
-          <span>Mode</span>
-          <strong>${getRecognitionModeLabel(profile)}</strong>
+          <span>Daily Bonus</span>
+          <strong>${timer.ready ? 'Claim now' : timer.text}</strong>
         </div>
         <div class="casino-meta-item">
-          <span>Region</span>
-          <strong>${profile.region.ready ? 'Locked' : 'Pending'}</strong>
+          <span>${secondaryStatLabel}</span>
+          <strong>${secondaryStatValue}</strong>
         </div>
+      </div>
+      <div class="card-actions">
+        <button class="card-action" type="button" data-action="detail">${actionLabel}</button>
       </div>
       <div class="casino-updated">${updated}</div>
     `;
@@ -538,6 +603,15 @@ function renderCasinos() {
     launchLink.addEventListener('click', (event) => {
       event.stopPropagation();
       launchCasinoWorkspace(casino);
+    });
+    const detailAction = card.querySelector('[data-action="detail"]');
+    detailAction.addEventListener('click', (event) => {
+      event.stopPropagation();
+      if (cardState === 'ready') {
+        openClaimBonusModal(casino);
+      } else {
+        openDetailPage(casino);
+      }
     });
 
     card.addEventListener('click', () => openDetailPage(casino));
@@ -548,10 +622,15 @@ function renderCasinos() {
       }
     });
 
-    grid.appendChild(card);
+    groups[cardState].push(card);
   });
 
+  groups.ready.forEach((card) => onDeckGrid.appendChild(card));
+  groups.soon.forEach((card) => readySoonGrid.appendChild(card));
+  groups.setup.forEach((card) => setupNeededGrid.appendChild(card));
+
   totalEl.textContent = formatBalance(total);
+  dashboardTotalEl.textContent = `${formatBalance(total)} SC`;
   countEl.textContent = `${userCasinos.length} casino${userCasinos.length !== 1 ? 's' : ''} tracked`;
   readyCountEl.textContent = String(readyCount);
   calibrationCountEl.textContent = String(calibrationCount);
@@ -559,6 +638,42 @@ function renderCasinos() {
   heroLastUpdatedEl.textContent = latestUpdatedAt
     ? `Latest balance update ${timeAgo(latestUpdatedAt)}`
     : 'No recent updates yet';
+  dashboardReadyEl.textContent = `${readyCount} Site${readyCount === 1 ? '' : 's'} Ready`;
+  dashboardCasinoCountEl.textContent = `${userCasinos.length} casino${userCasinos.length === 1 ? '' : 's'} tracked`;
+  dashboardLastUpdatedEl.textContent = heroLastUpdatedEl.textContent;
+  dashboardOnDeckCountEl.textContent = `${groups.ready.length} ready now`;
+  dashboardReadySoonCountEl.textContent = `${groups.soon.length} cooling down`;
+  dashboardSetupCountEl.textContent = `${groups.setup.length} need setup`;
+  if (nextClaimCasino) {
+    dashboardNextClaimNameEl.textContent = nextClaimCasino.name;
+    dashboardNextClaimTimeEl.textContent = `Estimated in ${getTimerInfo(nextClaimCasino).text}`;
+  } else if (groups.ready.length > 0) {
+    dashboardNextClaimNameEl.textContent = 'Claims available now';
+    dashboardNextClaimTimeEl.textContent = 'Use Go to launch the next site';
+  } else {
+    dashboardNextClaimNameEl.textContent = 'No pending claims';
+    dashboardNextClaimTimeEl.textContent = 'Finish setup to start tracking';
+  }
+}
+
+function getRemainingClaimMs(casino) {
+  const resetVal = parseInt(casino.reset_hours, 10) || 24;
+  if (resetVal >= 10000) {
+    const minsFromMidnight = resetVal - 10000;
+    const resetHour = Math.floor(minsFromMidnight / 60);
+    const resetMin = minsFromMidnight % 60;
+    const now = new Date();
+    const nextReset = new Date();
+    nextReset.setHours(resetHour, resetMin, 0, 0);
+    if (nextReset <= now) nextReset.setDate(nextReset.getDate() + 1);
+    if (!casino.last_claimed_at) return 0;
+    const prevReset = new Date(nextReset);
+    prevReset.setDate(prevReset.getDate() - 1);
+    return new Date(casino.last_claimed_at) >= prevReset ? (nextReset - now) : 0;
+  }
+  if (!casino.last_claimed_at) return 0;
+  const claimedAt = new Date(casino.last_claimed_at).getTime();
+  return Math.max(0, (claimedAt + resetVal * 3600 * 1000) - Date.now());
 }
 
 function getTimerInfo(casino) {
@@ -615,6 +730,7 @@ function getTimerInfo(casino) {
 function startTimerLoop() {
   if (timerInterval) clearInterval(timerInterval);
   timerInterval = setInterval(() => {
+    renderCasinos();
     if (activeCasino) updateDetailBonusStatus(activeCasino);
   }, 30000);
 }
@@ -639,6 +755,90 @@ function updateDetailBonusStatus(casino) {
   }
 
   claimBtn.disabled = !ready;
+  claimBtn.textContent = ready ? 'Log Daily Bonus' : 'Bonus Cooling Down';
+}
+
+function getTodayDateInputValue() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function openClaimBonusModal(casino) {
+  claimCasinoId = casino.id;
+  document.getElementById('claim-bonus-casino').value = casino.name;
+  document.getElementById('claim-bonus-amount').value = '';
+  document.getElementById('claim-bonus-date').value = getTodayDateInputValue();
+  document.getElementById('claim-bonus-modal').classList.add('open');
+}
+
+function closeClaimBonusModal() {
+  document.getElementById('claim-bonus-modal').classList.remove('open');
+  claimCasinoId = null;
+}
+
+async function logDailyBonusClaim(casino, amount, entryDate, resetHours) {
+  const now = new Date().toISOString();
+  const payload = {
+    last_claimed_at: now,
+    reset_hours: resetHours
+  };
+
+  const { error: claimError } = await sb.from('casinos').update(payload)
+    .eq('id', casino.id)
+    .eq('user_id', currentUser.id);
+  if (claimError) {
+    console.error('Claim update failed:', claimError);
+    return false;
+  }
+
+  const { data: bonusEntry, error: bonusError } = await sb.from('casino_log').insert({
+    user_id: currentUser.id,
+    casino_id: casino.id,
+    entry_type: 'daily_bonus',
+    amount,
+    entry_date: entryDate
+  }).select().single();
+
+  if (bonusError) {
+    console.error('Daily bonus log failed:', bonusError);
+    return false;
+  }
+
+  const casinoInList = userCasinos.find((item) => item.id === casino.id);
+  if (casinoInList) {
+    casinoInList.last_claimed_at = now;
+    casinoInList.reset_hours = resetHours;
+    casinoInList.updated_at = now;
+  }
+
+  if (activeCasino && activeCasino.id === casino.id) {
+    activeCasino.last_claimed_at = now;
+    activeCasino.reset_hours = resetHours;
+    activeCasino.updated_at = now;
+    updateDetailBonusStatus(activeCasino);
+    if (Array.isArray(casinoLogEntries)) {
+      casinoLogEntries.unshift(bonusEntry);
+      renderLogEntries();
+    }
+  }
+
+  renderCasinos();
+  return true;
+}
+
+function getSelectedResetHours() {
+  const val = document.getElementById('detail-reset-hours').value;
+  if (val === 'daily') {
+    const timeVal = document.getElementById('daily-reset-time').value;
+    if (timeVal) {
+      const [hh, mm] = timeVal.split(':').map(Number);
+      return 10000 + hh * 60 + mm;
+    }
+  }
+  return parseInt(val, 10) || activeCasino?.reset_hours || 24;
 }
 
 function formatBalance(val) {
@@ -780,8 +980,7 @@ function populateTrainingForm(casino, profile) {
 
 function syncDetailView(casino) {
   const profile = getProfile(casino);
-  const coverage = getProfileCoverage(profile);
-  const status = getProfileStatus(profile);
+  const timer = getTimerInfo(casino);
   const updatedText = casino.updated_at ? `Updated ${timeAgo(new Date(casino.updated_at))}` : 'never updated';
   const customUrl = typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG[casino.domain]?.launch_url;
   const siteUrl = customUrl || `https://${casino.domain}`;
@@ -802,8 +1001,10 @@ function syncDetailView(casino) {
   document.getElementById('detail-balance-updated').textContent = updatedText;
 
   document.getElementById('detail-region-badge').textContent = profile.region.ready ? 'Locked' : 'Unconfigured';
-  document.getElementById('detail-coverage-badge').textContent = `${coverage.learned.length} / ${REQUIRED_GLYPHS.length}`;
-  document.getElementById('detail-profile-status-badge').textContent = status.label;
+  document.getElementById('detail-coverage-badge').textContent = timer.ready ? 'Ready now' : timer.text;
+  document.getElementById('detail-profile-status-badge').textContent = profile.region.ready
+    ? (timer.ready ? 'Ready to collect' : 'Tracking active')
+    : 'Setup needed';
 
   const resetSelect = document.getElementById('detail-reset-hours');
   const dailyWrap = document.getElementById('daily-reset-time-wrap');
@@ -856,41 +1057,29 @@ document.getElementById('detail-back-btn').addEventListener('click', closeDetail
 
 document.getElementById('detail-claim-btn').addEventListener('click', async () => {
   if (!activeCasino) return;
+  openClaimBonusModal(activeCasino);
+});
 
-  const val = document.getElementById('detail-reset-hours').value;
-  let resetHours;
-  if (val === 'daily') {
-    const timeVal = document.getElementById('daily-reset-time').value;
-    if (timeVal) {
-      const [hh, mm] = timeVal.split(':').map(Number);
-      resetHours = 10000 + hh * 60 + mm;
-    } else {
-      resetHours = activeCasino.reset_hours || 24;
-    }
-  } else {
-    resetHours = parseInt(val, 10) || 24;
-  }
+document.getElementById('close-claim-bonus-modal').addEventListener('click', closeClaimBonusModal);
+document.getElementById('claim-bonus-modal').addEventListener('click', (event) => {
+  if (event.target === event.currentTarget) closeClaimBonusModal();
+});
 
-  const now = new Date().toISOString();
-  const casino = userCasinos.find((item) => item.id === activeCasino.id);
-  if (casino) {
-    casino.last_claimed_at = now;
-    casino.reset_hours = resetHours;
-  }
-  activeCasino.last_claimed_at = now;
-  activeCasino.reset_hours = resetHours;
-  updateDetailBonusStatus(activeCasino);
+document.getElementById('confirm-claim-bonus').addEventListener('click', async () => {
+  const casino = userCasinos.find((item) => item.id === claimCasinoId)
+    || (activeCasino && activeCasino.id === claimCasinoId ? activeCasino : null);
+  if (!casino) return;
 
-  const { error } = await sb.from('casinos').update({
-    last_claimed_at: now,
-    reset_hours: resetHours
-  }).eq('id', activeCasino.id).eq('user_id', currentUser.id);
+  const amount = parseFloat(document.getElementById('claim-bonus-amount').value);
+  const entryDate = document.getElementById('claim-bonus-date').value || getTodayDateInputValue();
+  if (Number.isNaN(amount) || amount <= 0) return;
 
-  if (error) {
-    console.error('Claim update failed:', error);
-  }
+  const resetHours = activeCasino && activeCasino.id === casino.id
+    ? getSelectedResetHours()
+    : (parseInt(casino.reset_hours, 10) || 24);
 
-  renderCasinos();
+  const saved = await logDailyBonusClaim(casino, amount, entryDate, resetHours);
+  if (saved) closeClaimBonusModal();
 });
 
 document.getElementById('detail-reset-hours').addEventListener('change', async () => {

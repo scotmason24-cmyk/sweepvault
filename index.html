@@ -16,7 +16,7 @@
         <span class="logo-icon">&#9672;</span>
         <span class="logo-text">SweepVault</span>
       </div>
-      <p class="auth-tagline">Template-driven balance tracking for sweepstakes play</p>
+      <p class="auth-tagline">Track balances, collect daily bonuses, and keep every sweep site in one place.</p>
 
       <div class="tab-switcher">
         <button class="tab-btn active" id="login-tab">Sign In</button>
@@ -45,7 +45,6 @@
         <div class="header-balance-wrap">
           <span class="header-balance-label">SC Tracked Total:</span>
           <span class="header-balance-amount" id="total-balance">0.00</span>
-          <!-- Preserved tracking ids so JS won't break -->
           <span id="casino-count" style="display:none">0 casinos tracked</span>
           <span id="ready-count" style="display:none">0</span>
           <span id="calibration-count" style="display:none">0</span>
@@ -57,7 +56,49 @@
       </div>
     </header>
 
-    <main class="casino-grid" id="casino-grid">
+    <main class="dashboard-shell">
+      <section class="dashboard-summary">
+        <div class="summary-card summary-card--total">
+          <span class="summary-label">Total Tracked</span>
+          <strong class="summary-value" id="dashboard-total-balance">0.00 SC</strong>
+          <span class="summary-note" id="dashboard-last-updated">No recent updates yet</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-label">Ready Sites</span>
+          <strong class="summary-value" id="dashboard-ready-count">0 Sites Ready</strong>
+          <span class="summary-note" id="dashboard-casino-count">0 casinos tracked</span>
+        </div>
+        <div class="summary-card">
+          <span class="summary-label">Next Claim</span>
+          <strong class="summary-value" id="dashboard-next-claim-name">No pending claims</strong>
+          <span class="summary-note" id="dashboard-next-claim-time">Add sites to start tracking</span>
+        </div>
+      </section>
+
+      <section class="dashboard-section">
+        <div class="section-heading">
+          <h2>On Deck</h2>
+          <span id="dashboard-on-deck-count">0 ready now</span>
+        </div>
+        <div class="dashboard-card-grid dashboard-card-grid--featured" id="on-deck-grid"></div>
+      </section>
+
+      <section class="dashboard-section">
+        <div class="section-heading">
+          <h2>Ready Soon</h2>
+          <span id="dashboard-ready-soon-count">0 cooling down</span>
+        </div>
+        <div class="dashboard-card-grid" id="ready-soon-grid"></div>
+      </section>
+
+      <section class="dashboard-section">
+        <div class="section-heading">
+          <h2>Setup Needed</h2>
+          <span id="dashboard-setup-count">0 need setup</span>
+        </div>
+        <div class="dashboard-card-grid" id="setup-needed-grid"></div>
+      </section>
+
       <div class="empty-state" id="empty-state">
         <div class="empty-icon">&#127920;</div>
         <p>No casinos added yet</p>
@@ -140,7 +181,6 @@
 
     <div class="detail-tabs">
       <button class="detail-tab active" data-tab="overview">Overview</button>
-      <button class="detail-tab" data-tab="training">Training</button>
       <button class="detail-tab" data-tab="records">My Records</button>
     </div>
 
@@ -177,17 +217,17 @@
       <div class="detail-sections">
         <div class="detail-section-row">
           <span class="detail-section-icon">&#128247;</span>
-          <span class="detail-section-label">Capture Region</span>
+          <span class="detail-section-label">Scanner Setup</span>
           <span class="detail-section-badge" id="detail-region-badge">Unconfigured</span>
         </div>
         <div class="detail-section-row">
-          <span class="detail-section-icon">&#128290;</span>
-          <span class="detail-section-label">Glyph Coverage</span>
+          <span class="detail-section-icon">&#9201;</span>
+          <span class="detail-section-label">Bonus Timer</span>
           <span class="detail-section-badge" id="detail-coverage-badge">0 / 11</span>
         </div>
         <div class="detail-section-row">
-          <span class="detail-section-icon">&#129504;</span>
-          <span class="detail-section-label">Recognizer Status</span>
+          <span class="detail-section-icon">&#128176;</span>
+          <span class="detail-section-label">Collection Status</span>
           <span class="detail-section-badge" id="detail-profile-status-badge">Needs setup</span>
         </div>
       </div>
@@ -411,6 +451,24 @@
         <label>Money Spent ($)</label>
         <input type="number" id="purchase-money" placeholder="0.00" step="0.01" min="0" />
         <button class="btn-primary" id="confirm-add-purchase">Save Purchase</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="claim-bonus-modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Log Daily Bonus</h2>
+        <button class="modal-close" id="close-claim-bonus-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <label>Casino</label>
+        <input type="text" id="claim-bonus-casino" readonly />
+        <label>Bonus Collected ($)</label>
+        <input type="number" id="claim-bonus-amount" placeholder="0.00" step="0.01" min="0" />
+        <label>Date</label>
+        <input type="date" id="claim-bonus-date" />
+        <button class="btn-primary" id="confirm-claim-bonus">Save Claim</button>
       </div>
     </div>
   </div>

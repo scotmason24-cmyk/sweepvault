@@ -4,8 +4,10 @@ Thumbs.db
 
 # Temp / preview files
 *-preview.html
+proposal-*.html
 *.tmp
 *.bak
+*.lnk
 
 # Editor
 .vscode/
