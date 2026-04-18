@@ -321,7 +321,7 @@ textarea:focus {
 }
 
 .dashboard-shell {
-  width: min(1200px, calc(100% - 32px));
+  width: min(1480px, calc(100% - 32px));
   margin: 0 auto;
   padding: 28px 0 56px;
   display: grid;
@@ -416,12 +416,12 @@ textarea:focus {
 
 .dashboard-card-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 18px;
 }
 
 .dashboard-card-grid--featured {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .casino-card {
