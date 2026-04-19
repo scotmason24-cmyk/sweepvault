@@ -858,10 +858,19 @@ function triggerCasinoOverlay(casinoId) {
   setTimeout(() => iframe.remove(), 1000);
 }
 
+function getCasinoLaunchUrl(casino) {
+  const resolver = window.SweepVaultSiteConfigUtils;
+  if (resolver?.getCasinoLaunchUrl) {
+    return resolver.getCasinoLaunchUrl(typeof SITE_CONFIG !== 'undefined' ? SITE_CONFIG : null, casino);
+  }
+
+  const customUrl = typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG[casino.domain]?.launch_url;
+  return customUrl || `https://${casino.domain}`;
+}
+
 function launchCasinoWorkspace(casino) {
   triggerCasinoOverlay(casino.id);
-  const customUrl = typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG[casino.domain]?.launch_url;
-  window.open(customUrl || `https://${casino.domain}`, '_blank', 'noopener,noreferrer');
+  window.open(getCasinoLaunchUrl(casino), '_blank', 'noopener,noreferrer');
 }
 
 function timeAgo(date) {
@@ -982,8 +991,7 @@ function syncDetailView(casino) {
   const profile = getProfile(casino);
   const timer = getTimerInfo(casino);
   const updatedText = casino.updated_at ? `Updated ${timeAgo(new Date(casino.updated_at))}` : 'never updated';
-  const customUrl = typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG[casino.domain]?.launch_url;
-  const siteUrl = customUrl || `https://${casino.domain}`;
+  const siteUrl = getCasinoLaunchUrl(casino);
 
   document.getElementById('detail-casino-name').textContent = casino.name;
   document.getElementById('detail-open-site').href = siteUrl;
@@ -993,6 +1001,14 @@ function syncDetailView(casino) {
   document.getElementById('detail-hero-name').textContent = casino.name;
   document.getElementById('detail-hero-domain').textContent = casino.domain;
   document.getElementById('detail-open-overlay-btn').onclick = () => triggerCasinoOverlay(casino.id);
+  document.getElementById('detail-open-site').onclick = (event) => {
+    event.preventDefault();
+    launchCasinoWorkspace(casino);
+  };
+  document.getElementById('detail-open-site-btn').onclick = (event) => {
+    event.preventDefault();
+    launchCasinoWorkspace(casino);
+  };
 
   document.getElementById('detail-hero-balance').textContent = `${formatBalance(casino.balance)} SC`;
   document.getElementById('detail-hero-mode').textContent = getRecognitionModeLabel(profile);
