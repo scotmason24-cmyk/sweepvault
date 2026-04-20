@@ -1,7 +1,9 @@
 const PROFILE_STORAGE_KEY = 'sweepvault-template-profiles';
+const CUSTOM_URLS_KEY = 'sweepvault-custom-launch-urls';
 const REQUIRED_GLYPHS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'];
 let profileStore = {};
 let claimCasinoId = null;
+let isCustomMode = false;
 
 function createEmptyGlyphStats() {
   return REQUIRED_GLYPHS.reduce((acc, glyph) => {
@@ -82,6 +84,20 @@ function loadProfiles() {
 
 function saveProfiles() {
   localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profileStore));
+}
+
+function loadCustomUrls() {
+  try { return JSON.parse(localStorage.getItem(CUSTOM_URLS_KEY) || '{}'); } catch { return {}; }
+}
+
+function saveCustomUrl(domain, url) {
+  const urls = loadCustomUrls();
+  urls[domain] = url;
+  localStorage.setItem(CUSTOM_URLS_KEY, JSON.stringify(urls));
+}
+
+function getCustomUrl(domain) {
+  return loadCustomUrls()[domain] || null;
 }
 
 function getProfileKey(casino) {
@@ -859,13 +875,16 @@ function triggerCasinoOverlay(casinoId) {
 }
 
 function getCasinoLaunchUrl(casino) {
+  const savedCustomUrl = getCustomUrl(casino.domain);
+  if (savedCustomUrl) return savedCustomUrl;
+
   const resolver = window.SweepVaultSiteConfigUtils;
   if (resolver?.getCasinoLaunchUrl) {
     return resolver.getCasinoLaunchUrl(typeof SITE_CONFIG !== 'undefined' ? SITE_CONFIG : null, casino);
   }
 
-  const customUrl = typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG[casino.domain]?.launch_url;
-  return customUrl || `https://${casino.domain}`;
+  const configUrl = typeof SITE_CONFIG !== 'undefined' && SITE_CONFIG[casino.domain]?.launch_url;
+  return configUrl || `https://${casino.domain}`;
 }
 
 function launchCasinoWorkspace(casino) {
@@ -1283,6 +1302,12 @@ function populateCasinoSelect() {
 }
 
 function openAddModal() {
+  isCustomMode = false;
+  document.getElementById('add-from-list-section').style.display = 'block';
+  document.getElementById('add-custom-section').style.display = 'none';
+  document.getElementById('toggle-custom-casino').textContent = '+ Add a custom casino instead';
+  document.getElementById('custom-casino-name').value = '';
+  document.getElementById('custom-casino-url').value = '';
   populateCasinoSelect();
   document.getElementById('casino-balance').value = '';
   document.getElementById('add-modal').classList.add('open');
@@ -1292,6 +1317,15 @@ function closeAddModal() {
   document.getElementById('add-modal').classList.remove('open');
 }
 
+document.getElementById('toggle-custom-casino').addEventListener('click', () => {
+  isCustomMode = !isCustomMode;
+  document.getElementById('add-from-list-section').style.display = isCustomMode ? 'none' : 'block';
+  document.getElementById('add-custom-section').style.display = isCustomMode ? 'block' : 'none';
+  document.getElementById('toggle-custom-casino').textContent = isCustomMode
+    ? '← Choose from list instead'
+    : '+ Add a custom casino instead';
+});
+
 document.getElementById('add-casino-btn').addEventListener('click', openAddModal);
 document.getElementById('empty-add-btn').addEventListener('click', openAddModal);
 document.getElementById('close-add-modal').addEventListener('click', closeAddModal);
@@ -1300,16 +1334,39 @@ document.getElementById('add-modal').addEventListener('click', (event) => {
 });
 
 document.getElementById('confirm-add-casino').addEventListener('click', async () => {
-  const domain = document.getElementById('casino-select').value;
   const balance = document.getElementById('casino-balance').value;
-  if (!domain) return;
 
-  const config = SITE_CONFIG[domain];
-  const casino = await addCasinoToDB(domain, config.name, balance || 0);
-  if (casino) {
-    userCasinos.push(casino);
-    getProfile(casino);
-    renderCasinos();
+  if (isCustomMode) {
+    const name = document.getElementById('custom-casino-name').value.trim();
+    const url = document.getElementById('custom-casino-url').value.trim();
+    if (!name || !url) return;
+
+    let domain;
+    try {
+      domain = new URL(url).hostname.replace(/^www\./, '');
+    } catch {
+      alert('Please enter a valid URL (e.g. https://example.com)');
+      return;
+    }
+
+    saveCustomUrl(domain, url);
+    const casino = await addCasinoToDB(domain, name, balance || 0);
+    if (casino) {
+      userCasinos.push(casino);
+      getProfile(casino);
+      renderCasinos();
+    }
+  } else {
+    const domain = document.getElementById('casino-select').value;
+    if (!domain) return;
+
+    const config = SITE_CONFIG[domain];
+    const casino = await addCasinoToDB(domain, config.name, balance || 0);
+    if (casino) {
+      userCasinos.push(casino);
+      getProfile(casino);
+      renderCasinos();
+    }
   }
 
   closeAddModal();
