@@ -525,11 +525,7 @@ function renderCasinos() {
     const profile = getProfile(casino);
     const timer = getTimerInfo(casino);
     const updated = casino.updated_at ? timeAgo(new Date(casino.updated_at)) : 'never';
-    const cardState = !profile.region.ready
-      ? 'setup'
-      : timer.ready
-        ? 'ready'
-        : 'soon';
+    const cardState = timer.ready ? 'ready' : 'soon';
 
     total += parseFloat(casino.balance) || 0;
     if (cardState === 'ready') readyCount += 1;
@@ -543,7 +539,7 @@ function renderCasinos() {
       }
     }
 
-    if (!timer.ready && profile.region.ready) {
+    if (!timer.ready) {
       const remainingMs = getRemainingClaimMs(casino);
       if (remainingMs < nextClaimMs) {
         nextClaimMs = remainingMs;
@@ -559,22 +555,12 @@ function renderCasinos() {
     card.setAttribute('aria-label', `Open ${casino.name} details`);
 
     const launchLabel = cardState === 'ready' ? 'Go' : 'Go';
-    const timerDisplay = cardState === 'ready'
-      ? 'Ready to collect'
-      : cardState === 'soon'
-        ? `In ${timer.text}`
-        : 'Needs scanner setup';
-    const secondaryStatLabel = cardState === 'setup'
-      ? 'Scanner'
-      : 'Next Window';
-    const secondaryStatValue = cardState === 'setup'
-      ? (profile.region.ready ? 'Linked' : 'Unconfigured')
-      : (timer.resetTime || 'Rolling window');
+    const timerDisplay = cardState === 'ready' ? 'Ready to collect' : `In ${timer.text}`;
+    const secondaryStatLabel = 'Next Window';
+    const secondaryStatValue = timer.resetTime || 'Rolling window';
     const actionLabel = cardState === 'ready'
       ? 'Log Bonus'
-      : cardState === 'setup'
-        ? 'Open Details'
-        : 'View Timer';
+      : 'View Timer';
 
     card.innerHTML = `
       <div class="casino-card-top">
@@ -594,7 +580,7 @@ function renderCasinos() {
       </div>
       <div class="casino-status-line">
         <span class="profile-badge tone-${cardState === 'ready' ? 'ready' : cardState === 'soon' ? 'progress' : 'muted'}">
-          ${cardState === 'ready' ? 'Ready Now' : cardState === 'soon' ? 'Ready Soon' : 'Setup Needed'}
+          ${cardState === 'ready' ? 'Ready Now' : 'Ready Soon'}
         </span>
         <span class="profile-meta">${timerDisplay}</span>
       </div>
@@ -616,8 +602,22 @@ function renderCasinos() {
     `;
 
     const launchLink = card.querySelector('.casino-launch-link');
-    launchLink.addEventListener('click', (event) => {
+    launchLink.addEventListener('click', async (event) => {
       event.stopPropagation();
+      if (cardState === 'ready') {
+        const resetHours = parseInt(casino.reset_hours, 10) || 24;
+        const claimed = await logDailyBonusClaim(
+          casino,
+          null,
+          getTodayDateInputValue(),
+          resetHours,
+          { logEntry: false }
+        );
+        if (claimed) {
+          launchCasinoWorkspace(casino, { openOverlay: false });
+        }
+        return;
+      }
       launchCasinoWorkspace(casino);
     });
     const detailAction = card.querySelector('[data-action="detail"]');
@@ -643,7 +643,6 @@ function renderCasinos() {
 
   groups.ready.forEach((card) => onDeckGrid.appendChild(card));
   groups.soon.forEach((card) => readySoonGrid.appendChild(card));
-  groups.setup.forEach((card) => setupNeededGrid.appendChild(card));
 
   totalEl.textContent = formatBalance(total);
   dashboardTotalEl.textContent = `${formatBalance(total)} SC`;
@@ -659,7 +658,7 @@ function renderCasinos() {
   dashboardLastUpdatedEl.textContent = heroLastUpdatedEl.textContent;
   dashboardOnDeckCountEl.textContent = `${groups.ready.length} ready now`;
   dashboardReadySoonCountEl.textContent = `${groups.soon.length} cooling down`;
-  dashboardSetupCountEl.textContent = `${groups.setup.length} need setup`;
+  dashboardSetupCountEl.textContent = '0 need setup';
   if (nextClaimCasino) {
     dashboardNextClaimNameEl.textContent = nextClaimCasino.name;
     dashboardNextClaimTimeEl.textContent = `Estimated in ${getTimerInfo(nextClaimCasino).text}`;
@@ -795,7 +794,8 @@ function closeClaimBonusModal() {
   claimCasinoId = null;
 }
 
-async function logDailyBonusClaim(casino, amount, entryDate, resetHours) {
+async function logDailyBonusClaim(casino, amount, entryDate, resetHours, options = {}) {
+  const shouldLogEntry = options.logEntry !== false;
   const now = new Date().toISOString();
   const payload = {
     last_claimed_at: now,
@@ -810,17 +810,22 @@ async function logDailyBonusClaim(casino, amount, entryDate, resetHours) {
     return false;
   }
 
-  const { data: bonusEntry, error: bonusError } = await sb.from('casino_log').insert({
-    user_id: currentUser.id,
-    casino_id: casino.id,
-    entry_type: 'daily_bonus',
-    amount,
-    entry_date: entryDate
-  }).select().single();
+  let bonusEntry = null;
+  if (shouldLogEntry) {
+    const { data: insertedBonusEntry, error: bonusError } = await sb.from('casino_log').insert({
+      user_id: currentUser.id,
+      casino_id: casino.id,
+      entry_type: 'daily_bonus',
+      amount,
+      entry_date: entryDate
+    }).select().single();
 
-  if (bonusError) {
-    console.error('Daily bonus log failed:', bonusError);
-    return false;
+    if (bonusError) {
+      console.error('Daily bonus log failed:', bonusError);
+      return false;
+    }
+
+    bonusEntry = insertedBonusEntry;
   }
 
   const casinoInList = userCasinos.find((item) => item.id === casino.id);
@@ -835,7 +840,7 @@ async function logDailyBonusClaim(casino, amount, entryDate, resetHours) {
     activeCasino.reset_hours = resetHours;
     activeCasino.updated_at = now;
     updateDetailBonusStatus(activeCasino);
-    if (Array.isArray(casinoLogEntries)) {
+    if (bonusEntry && Array.isArray(casinoLogEntries)) {
       casinoLogEntries.unshift(bonusEntry);
       renderLogEntries();
     }
@@ -887,8 +892,11 @@ function getCasinoLaunchUrl(casino) {
   return configUrl || `https://${casino.domain}`;
 }
 
-function launchCasinoWorkspace(casino) {
-  triggerCasinoOverlay(casino.id);
+function launchCasinoWorkspace(casino, options = {}) {
+  const { openOverlay = true } = options;
+  if (openOverlay) {
+    triggerCasinoOverlay(casino.id);
+  }
   window.open(getCasinoLaunchUrl(casino), '_blank', 'noopener,noreferrer');
 }
 
